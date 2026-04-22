@@ -54,6 +54,8 @@ git pull
 | `export.sh` | Export configs from current Mac to `dotfiles/` |
 | `setup.sh` | Install tools and import configs on new Mac |
 | `sync.sh` | Sync configs between Macs (push/pull) |
+| `scripts/verify-setup.sh` | Verify Brewfile tools and synced configs on a target Mac |
+| `scripts/test-tart-setup.sh` | Export locally, test `setup.sh` in a fresh Tart VM, verify, then destroy the VM |
 
 ## Structure
 
@@ -77,3 +79,28 @@ dotfiles/
 4. Sign in to apps: 1Password, Slack, Telegram, Obsidian, Raycast
 
 See `secrets-checklist.md` for full list.
+
+## Tart VM Test Flow
+
+Use this to simulate migration from your current laptop into a fresh macOS Tart VM:
+
+```sh
+./scripts/test-tart-setup.sh
+```
+
+What it does:
+
+1. Runs `./export.sh` on the host Mac
+2. Clones and boots a fresh Tart VM from `ghcr.io/cirruslabs/macos-tahoe-vanilla:latest`
+3. Mounts this repository into the VM
+4. Runs `NONINTERACTIVE=1 ./setup.sh` inside the VM
+5. Runs `./scripts/verify-setup.sh` inside the VM
+6. Always deletes the VM at the end, whether the test passes or fails
+
+Useful overrides:
+
+```sh
+IMAGE_NAME=ghcr.io/cirruslabs/macos-tahoe-vanilla:latest ./scripts/test-tart-setup.sh
+VM_CPU=6 VM_MEMORY=12288 VM_DISK_SIZE=120 ./scripts/test-tart-setup.sh
+LOG_DIR="$PWD/.tmp/tart-test" ./scripts/test-tart-setup.sh
+```

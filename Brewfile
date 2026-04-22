@@ -28,7 +28,7 @@ brew "mise"
 # AI Tools
 # =============================================================================
 brew "opencode"
-cask "claude"
+# Claude Code is installed via curl script in setup.sh
 cask "codex"
 cask "codex-app"
 

@@ -24,6 +24,45 @@ print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
 print_error() { echo -e "${RED}✗${NC} $1"; }
 print_step() { echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"; echo -e "${CYAN}  $1${NC}"; echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"; }
 
+NONINTERACTIVE="${NONINTERACTIVE:-0}"
+SUDO_PASSWORD="${SUDO_PASSWORD:-}"
+
+sudo_run() {
+    if [[ -n "$SUDO_PASSWORD" ]]; then
+        printf '%s\n' "$SUDO_PASSWORD" | sudo -S -p '' "$@"
+    else
+        sudo "$@"
+    fi
+}
+
+sudo_validate() {
+    if [[ -n "$SUDO_PASSWORD" ]]; then
+        printf '%s\n' "$SUDO_PASSWORD" | sudo -S -v -p ''
+    else
+        sudo -v
+    fi
+}
+
+install_xcode_clt_noninteractive() {
+    local placeholder="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+    local label=""
+
+    touch "$placeholder"
+
+    label="$(softwareupdate --list 2>/dev/null | awk -F'* Label: ' '/\* Label: .*Command Line Tools/ {print $2}' | tail -n 1)"
+
+    if [[ -z "$label" ]]; then
+        rm -f "$placeholder"
+        print_error "Unable to find a Command Line Tools update via softwareupdate"
+        return 1
+    fi
+
+    print_status "Installing Command Line Tools package: $label"
+    sudo_run softwareupdate --install "$label" --verbose
+    sudo_run xcode-select --switch /Library/Developer/CommandLineTools
+    rm -f "$placeholder"
+}
+
 sync_dir_contents() {
     local src="$1"
     local dest="$2"
@@ -62,10 +101,12 @@ echo "Homebrew prefix: $HOMEBREW_PREFIX"
 echo ""
 
 # Ask for sudo upfront
-sudo -v
+sudo_validate
 
-# Keep sudo alive
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+# Keep sudo alive for interactive runs
+if [[ -z "$SUDO_PASSWORD" ]]; then
+    while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+fi
 
 # ============================================================================
 # Xcode Command Line Tools
@@ -74,12 +115,16 @@ print_step "Installing Xcode Command Line Tools"
 
 if ! xcode-select -p &> /dev/null; then
     print_status "Installing Xcode Command Line Tools..."
-    xcode-select --install || true
+    if [[ "$NONINTERACTIVE" == "1" ]]; then
+        install_xcode_clt_noninteractive
+    else
+        xcode-select --install || true
 
-    until xcode-select -p &> /dev/null; do
-        print_warning "Complete the Xcode Command Line Tools installation, then press Enter to re-check..."
-        read -r
-    done
+        until xcode-select -p &> /dev/null; do
+            print_warning "Complete the Xcode Command Line Tools installation, then press Enter to re-check..."
+            read -r
+        done
+    fi
 
     print_success "Xcode Command Line Tools installed"
 else
@@ -148,12 +193,16 @@ if command -v fish &> /dev/null; then
     FISH_PATH=$(which fish)
     if ! grep -q "$FISH_PATH" /etc/shells; then
         print_status "Adding Fish to /etc/shells..."
-        echo "$FISH_PATH" | sudo tee -a /etc/shells
+        sudo_run sh -c "printf '%s\n' '$FISH_PATH' >> /etc/shells"
     fi
 
     if [[ "$SHELL" != "$FISH_PATH" ]]; then
         print_status "Setting Fish as default shell..."
-        chsh -s "$FISH_PATH"
+        if [[ "$NONINTERACTIVE" == "1" || -n "$SUDO_PASSWORD" ]]; then
+            sudo_run chsh -s "$FISH_PATH" "$USER"
+        else
+            chsh -s "$FISH_PATH"
+        fi
         print_success "Fish set as default shell"
     else
         print_success "Fish already set as default shell"
@@ -309,7 +358,16 @@ fi
 # ============================================================================
 print_step "Setting up AI tools"
 
-# Claude Code
+# Install Claude Code CLI
+if ! command -v claude &> /dev/null; then
+    print_status "Installing Claude Code..."
+    curl -fsSL https://claude.ai/install.sh | bash
+    print_success "Claude Code installed"
+else
+    print_success "Claude Code already installed"
+fi
+
+# Claude Code configs
 if [[ -d "$DOTFILES_DIR/ai/claude" ]]; then
     mkdir -p ~/.claude
     [[ -f "$DOTFILES_DIR/ai/claude/settings.json" ]] && cp "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json
