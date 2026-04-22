@@ -18,8 +18,9 @@ That flow installs:
 
 - Xcode Command Line Tools
 - Homebrew and the full `Brewfile`
-- Fish, Fisher, and the required Fish plugin
+- Fish, Fisher, the required Fish plugin, and persistent Fish initialization for Homebrew, `mise`, and `starship`
 - Basic macOS defaults used in this setup
+- Homebrew cleanup for outdated downloads and old versions
 
 ## Still Manual
 
@@ -59,4 +60,4 @@ Run:
 ./verify.sh
 ```
 
-This checks the installed Homebrew packages, expected CLI tools, casks, and whether Fish is set as the default shell.
+This checks the installed Homebrew packages, expected CLI tools, casks, Fish shell state, Fish bootstrap lines, and the required Fisher plugin.

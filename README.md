@@ -33,8 +33,9 @@ What `setup.sh` does:
 1. Installs Xcode Command Line Tools
 2. Installs and updates Homebrew
 3. Installs everything declared in `Brewfile`
-4. Sets up Fish, Fisher, and the required Fish plugin
+4. Sets up Fish, Fisher, the required Fish plugin, and persistent Fish initialization for Homebrew, `mise`, and `starship`
 5. Applies a small set of macOS defaults
+6. Runs `brew cleanup`
 
 ## Repository Layout
 
@@ -54,7 +55,7 @@ After setup finishes:
 ./verify.sh
 ```
 
-`verify.sh` checks macOS prerequisites, `brew bundle` state, expected CLI commands, installed casks, and whether Fish is the default shell.
+`verify.sh` checks macOS prerequisites, `brew bundle` state, expected CLI commands, installed casks, whether Fish is the default shell, whether Fish bootstrap lines are present, and whether Fisher plus the required plugin are installed.
 
 ## Manual Steps After Setup
 

@@ -42,6 +42,16 @@ detect_homebrew_prefix() {
     fi
 }
 
+append_line_if_missing() {
+    local file_path="$1"
+    local line="$2"
+
+    touch "$file_path"
+    if ! grep -Fqx "$line" "$file_path"; then
+        printf '%s\n' "$line" >>"$file_path"
+    fi
+}
+
 sudo_run() {
     if [[ -n "$SUDO_PASSWORD" ]]; then
         printf '%s\n' "$SUDO_PASSWORD" | sudo -S -p '' "$@"
@@ -152,6 +162,7 @@ ensure_directories() {
     print_step "Creating application directories"
 
     mkdir -p "$HOME/.config/fish/functions"
+    mkdir -p "$HOME/.config/fish"
 
     print_success "Application directories ready"
 }
@@ -196,6 +207,26 @@ setup_fish() {
     print_status "Installing Fish plugins"
     fish -c "fisher install jethrokuan/z"
     print_success "Fish plugins installed"
+}
+
+configure_fish_init() {
+    print_step "Writing Fish shell initialization"
+
+    local config_file="$HOME/.config/fish/config.fish"
+
+    append_line_if_missing "$config_file" 'if test -x '"$HOMEBREW_PREFIX"'/bin/brew'
+    append_line_if_missing "$config_file" '    eval ('"$HOMEBREW_PREFIX"'/bin/brew shellenv)'
+    append_line_if_missing "$config_file" 'end'
+    append_line_if_missing "$config_file" ''
+    append_line_if_missing "$config_file" 'if command -sq mise'
+    append_line_if_missing "$config_file" '    mise activate fish | source'
+    append_line_if_missing "$config_file" 'end'
+    append_line_if_missing "$config_file" ''
+    append_line_if_missing "$config_file" 'if command -sq starship'
+    append_line_if_missing "$config_file" '    starship init fish | source'
+    append_line_if_missing "$config_file" 'end'
+
+    print_success "Fish initialization updated"
 }
 
 configure_macos_defaults() {
@@ -246,7 +277,10 @@ main() {
     install_brew_bundle
     ensure_directories
     setup_fish
+    configure_fish_init
     configure_macos_defaults
+    print_status "Cleaning up Homebrew caches and old versions"
+    brew cleanup
     print_summary
 }
 

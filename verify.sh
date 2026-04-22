@@ -25,6 +25,18 @@ record_failure() {
     failures=$((failures + 1))
 }
 
+assert_file_contains() {
+    local file_path="$1"
+    local expected_text="$2"
+    local description="$3"
+
+    if [[ -f "$file_path" ]] && grep -Fqx "$expected_text" "$file_path"; then
+        print_success "$description"
+    else
+        record_failure "$description"
+    fi
+}
+
 assert_command() {
     local command_name="$1"
     if command -v "$command_name" >/dev/null 2>&1; then
@@ -87,7 +99,7 @@ done
 print_status "Checking installed casks"
 
 for cask_name in \
-    claude-code codex codex-app ghostty aerospace lm-studio xcodes-app obsidian \
+    claude-code codex codex-app ghostty@tip nikitabobko/tap/aerospace@0.19.2 lm-studio xcodes-app obsidian \
     meetingbar itsycal 1password raycast shottr the-unarchiver slack telegram \
     google-chrome
 do
@@ -103,6 +115,33 @@ if command -v fish >/dev/null 2>&1; then
         print_success "Default shell is Fish"
     else
         record_failure "Default shell is not Fish ($current_shell)"
+    fi
+fi
+
+print_status "Checking Fish bootstrap configuration"
+
+fish_config="$HOME/.config/fish/config.fish"
+if [[ "$(uname -m)" == "arm64" ]]; then
+    expected_brew_init='if test -x /opt/homebrew/bin/brew'
+else
+    expected_brew_init='if test -x /usr/local/bin/brew'
+fi
+
+assert_file_contains "$fish_config" "$expected_brew_init" "Fish config contains Homebrew init"
+assert_file_contains "$fish_config" '    mise activate fish | source' "Fish config contains mise activation"
+assert_file_contains "$fish_config" '    starship init fish | source' "Fish config contains starship initialization"
+
+if [[ -f "$HOME/.config/fish/functions/fisher.fish" ]]; then
+    print_success "Fisher is installed"
+else
+    record_failure "Fisher is not installed"
+fi
+
+if command -v fish >/dev/null 2>&1; then
+    if fish -c "fisher list | grep -Fxq jethrokuan/z"; then
+        print_success "Fish plugin installed: jethrokuan/z"
+    else
+        record_failure "Fish plugin missing: jethrokuan/z"
     fi
 fi
 
