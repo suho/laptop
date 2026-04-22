@@ -12,6 +12,7 @@ Personal macOS laptop setup and migration toolkit.
 | Window Mgmt | AeroSpace, Raycast |
 | Productivity | Obsidian, MeetingBar, Itsycal, 1Password |
 | CLI | gh, LazyGit, btop |
+| AI | Claude Code, Codex, opencode |
 | Communication | Slack, Telegram |
 | Runtimes | mise (install on demand) |
 
@@ -29,10 +30,6 @@ git add -A && git commit -m "Export configs" && git push
 ### On your NEW Mac (setup)
 
 ```sh
-# Install Xcode CLI tools first
-xcode-select --install
-
-# Clone and run setup
 git clone <this-repo> ~/Developer/suho/laptop
 cd ~/Developer/suho/laptop
 ./setup.sh
@@ -69,7 +66,7 @@ dotfiles/
 ├── editors/nvim/   # Neovim
 ├── cli/            # gh, lazygit, btop, aerospace
 ├── mise/           # Runtime version manager
-└── claude/         # Claude Code settings
+└── ai/             # Claude Code, Codex, opencode
 ```
 
 ## Manual Steps After Setup

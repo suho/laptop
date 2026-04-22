@@ -277,29 +277,47 @@ else
 fi
 
 # ============================================================================
-# Claude Code
+# AI Tools (Claude Code, Codex, opencode)
 # ============================================================================
-print_step "Setting up Claude Code"
+print_step "Setting up AI tools"
 
-if [[ -d "$DOTFILES_DIR/claude" ]]; then
+# Claude Code
+if [[ -d "$DOTFILES_DIR/ai/claude" ]]; then
     mkdir -p ~/.claude
-    [[ -f "$DOTFILES_DIR/claude/settings.json" ]] && cp "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
-    [[ -f "$DOTFILES_DIR/claude/keybindings.json" ]] && cp "$DOTFILES_DIR/claude/keybindings.json" ~/.claude/keybindings.json
-    if [[ -d "$DOTFILES_DIR/claude/commands" ]]; then
+    [[ -f "$DOTFILES_DIR/ai/claude/settings.json" ]] && cp "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json
+    [[ -f "$DOTFILES_DIR/ai/claude/keybindings.json" ]] && cp "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json
+    if [[ -d "$DOTFILES_DIR/ai/claude/commands" ]]; then
         mkdir -p ~/.claude/commands
-        cp -R "$DOTFILES_DIR/claude/commands"/* ~/.claude/commands/ 2>/dev/null || true
+        cp -R "$DOTFILES_DIR/ai/claude/commands"/* ~/.claude/commands/ 2>/dev/null || true
     fi
     print_success "Claude Code configs imported"
 fi
 
-# ============================================================================
-# Raycast scripts
-# ============================================================================
-if [[ -d "$DOTFILES_DIR/cli/raycast" ]]; then
-    print_step "Setting up Raycast scripts"
-    mkdir -p ~/me/raycast
-    cp -R "$DOTFILES_DIR/cli/raycast"/* ~/me/raycast/ 2>/dev/null || true
-    print_success "Raycast scripts imported"
+# Codex
+if [[ -d "$DOTFILES_DIR/ai/codex" ]]; then
+    mkdir -p ~/.codex
+    [[ -f "$DOTFILES_DIR/ai/codex/config.toml" ]] && cp "$DOTFILES_DIR/ai/codex/config.toml" ~/.codex/config.toml
+    [[ -f "$DOTFILES_DIR/ai/codex/AGENTS.md" ]] && cp "$DOTFILES_DIR/ai/codex/AGENTS.md" ~/.codex/AGENTS.md
+    if [[ -d "$DOTFILES_DIR/ai/codex/rules" ]]; then
+        mkdir -p ~/.codex/rules
+        cp -R "$DOTFILES_DIR/ai/codex/rules"/* ~/.codex/rules/ 2>/dev/null || true
+    fi
+    if [[ -d "$DOTFILES_DIR/ai/codex/skills" ]]; then
+        mkdir -p ~/.codex/skills
+        cp -R "$DOTFILES_DIR/ai/codex/skills"/* ~/.codex/skills/ 2>/dev/null || true
+    fi
+    if [[ -d "$DOTFILES_DIR/ai/codex/automations" ]]; then
+        mkdir -p ~/.codex/automations
+        cp -R "$DOTFILES_DIR/ai/codex/automations"/* ~/.codex/automations/ 2>/dev/null || true
+    fi
+    print_success "Codex configs imported"
+fi
+
+# opencode
+if [[ -d "$DOTFILES_DIR/ai/opencode" ]]; then
+    mkdir -p ~/.config/opencode
+    [[ -f "$DOTFILES_DIR/ai/opencode/opencode.json" ]] && cp "$DOTFILES_DIR/ai/opencode/opencode.json" ~/.config/opencode/opencode.json
+    print_success "opencode configs imported"
 fi
 
 # ============================================================================

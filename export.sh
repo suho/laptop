@@ -151,11 +151,6 @@ safe_copy_dir ~/.config/btop "$DOTFILES_DIR/cli/btop"
 ensure_dir "$DOTFILES_DIR/cli/aerospace"
 safe_copy ~/.config/aerospace/aerospace.toml "$DOTFILES_DIR/cli/aerospace/aerospace.toml"
 
-# Raycast scripts
-if [[ -d ~/me/raycast ]]; then
-    ensure_dir "$DOTFILES_DIR/cli/raycast"
-    safe_copy_dir ~/me/raycast "$DOTFILES_DIR/cli/raycast"
-fi
 
 
 # ============================================================================
@@ -169,19 +164,40 @@ safe_copy ~/.tool-versions "$DOTFILES_DIR/mise/.tool-versions"
 safe_copy ~/.default-gems "$DOTFILES_DIR/mise/.default-gems"
 
 # ============================================================================
-# Claude Code
+# AI Tools (Claude Code, Codex, opencode)
 # ============================================================================
-print_status "Exporting Claude Code configs..."
+print_status "Exporting AI tools configs..."
 
-ensure_dir "$DOTFILES_DIR/claude"
+# Claude Code
+ensure_dir "$DOTFILES_DIR/ai/claude"
 if [[ -d ~/.claude ]]; then
-    # Copy settings but be careful about memory/secrets
-    safe_copy ~/.claude/settings.json "$DOTFILES_DIR/claude/settings.json"
-    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/claude/keybindings.json"
-    # Copy custom commands if they exist
+    safe_copy ~/.claude/settings.json "$DOTFILES_DIR/ai/claude/settings.json"
+    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"
     if [[ -d ~/.claude/commands ]]; then
-        safe_copy_dir ~/.claude/commands "$DOTFILES_DIR/claude/commands"
+        safe_copy_dir ~/.claude/commands "$DOTFILES_DIR/ai/claude/commands"
     fi
+fi
+
+# Codex
+ensure_dir "$DOTFILES_DIR/ai/codex"
+if [[ -d ~/.codex ]]; then
+    safe_copy ~/.codex/config.toml "$DOTFILES_DIR/ai/codex/config.toml"
+    safe_copy ~/.codex/AGENTS.md "$DOTFILES_DIR/ai/codex/AGENTS.md"
+    if [[ -d ~/.codex/rules ]]; then
+        safe_copy_dir ~/.codex/rules "$DOTFILES_DIR/ai/codex/rules"
+    fi
+    if [[ -d ~/.codex/skills ]]; then
+        safe_copy_dir ~/.codex/skills "$DOTFILES_DIR/ai/codex/skills"
+    fi
+    if [[ -d ~/.codex/automations ]]; then
+        safe_copy_dir ~/.codex/automations "$DOTFILES_DIR/ai/codex/automations"
+    fi
+fi
+
+# opencode
+ensure_dir "$DOTFILES_DIR/ai/opencode"
+if [[ -d ~/.config/opencode ]]; then
+    safe_copy ~/.config/opencode/opencode.json "$DOTFILES_DIR/ai/opencode/opencode.json"
 fi
 
 # ============================================================================

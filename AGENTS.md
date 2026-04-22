@@ -22,9 +22,9 @@ laptop/
 │   ├── ssh/               # SSH config (NOT private keys)
 │   ├── editors/nvim/      # Neovim config
 │   ├── terminal/          # Ghostty, Starship configs
-│   ├── cli/               # gh, lazygit, btop, aerospace configs
+│   ├── cli/               # gh, lazygit, btop, aerospace
 │   ├── mise/              # mise config (runtimes installed on demand)
-│   └── ai/                # AI coding agent settings
+│   └── ai/                # Claude Code, Codex, opencode settings
 ├── Brewfile               # Homebrew bundle manifest
 ├── secrets-checklist.md   # List of secrets to manually restore
 └── macbook-migration-checklist.md  # Reference document

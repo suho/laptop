@@ -78,9 +78,11 @@ do_push() {
     safe_copy ~/.tool-versions "$DOTFILES_DIR/mise/.tool-versions"
     safe_copy ~/.default-gems "$DOTFILES_DIR/mise/.default-gems"
 
-    # Claude Code
-    safe_copy ~/.claude/settings.json "$DOTFILES_DIR/claude/settings.json" && print_success "Claude Code"
-    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/claude/keybindings.json"
+    # AI tools
+    safe_copy ~/.claude/settings.json "$DOTFILES_DIR/ai/claude/settings.json" && print_success "Claude Code"
+    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"
+    safe_copy ~/.codex/config.toml "$DOTFILES_DIR/ai/codex/config.toml" && print_success "Codex"
+    safe_copy ~/.config/opencode/opencode.json "$DOTFILES_DIR/ai/opencode/opencode.json" && print_success "opencode"
 
     # Update Brewfile
     if command -v brew &> /dev/null; then
@@ -133,10 +135,12 @@ do_pull() {
     safe_copy "$DOTFILES_DIR/mise/.tool-versions" ~/.tool-versions
     safe_copy "$DOTFILES_DIR/mise/.default-gems" ~/.default-gems
 
-    # Claude Code
-    mkdir -p ~/.claude
-    safe_copy "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json && print_success "Claude Code"
-    safe_copy "$DOTFILES_DIR/claude/keybindings.json" ~/.claude/keybindings.json
+    # AI tools
+    mkdir -p ~/.claude ~/.codex ~/.config/opencode
+    safe_copy "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json && print_success "Claude Code"
+    safe_copy "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json
+    safe_copy "$DOTFILES_DIR/ai/codex/config.toml" ~/.codex/config.toml && print_success "Codex"
+    safe_copy "$DOTFILES_DIR/ai/opencode/opencode.json" ~/.config/opencode/opencode.json && print_success "opencode"
 
     echo ""
     print_success "Pull complete!"
