@@ -93,8 +93,9 @@ mise use python@latest
 | App | Path |
 |---|---|
 | Obsidian vault | `~/me/obsidian/vansuho/` (entire vault) |
-| Claude Code | `~/.claude/` (settings, keybindings, `CLAUDE.md`, `memory.md`, custom commands, skills, agents, hooks) |
 | LM Studio | `~/.lmstudio-home-pointer` + downloaded models |
+
+AI tools are installed during setup, but `~/.claude`, `~/.codex`, and `~/.config/opencode` are not migrated by this repo.
 
 ---
 

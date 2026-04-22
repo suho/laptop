@@ -165,54 +165,6 @@ safe_copy ~/.tool-versions "$DOTFILES_DIR/mise/.tool-versions"
 safe_copy ~/.default-gems "$DOTFILES_DIR/mise/.default-gems"
 
 # ============================================================================
-# AI Tools (Claude Code, Codex, opencode)
-# ============================================================================
-print_status "Exporting AI tools configs..."
-
-# Claude Code
-ensure_dir "$DOTFILES_DIR/ai/claude"
-if [[ -d ~/.claude ]]; then
-    safe_copy ~/.claude/settings.json "$DOTFILES_DIR/ai/claude/settings.json"
-    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"
-    safe_copy ~/.claude/CLAUDE.md "$DOTFILES_DIR/ai/claude/CLAUDE.md"
-    safe_copy ~/.claude/memory.md "$DOTFILES_DIR/ai/claude/memory.md"
-    if [[ -d ~/.claude/commands ]]; then
-        safe_copy_dir ~/.claude/commands "$DOTFILES_DIR/ai/claude/commands"
-    fi
-    if [[ -d ~/.claude/skills ]]; then
-        safe_copy_dir ~/.claude/skills "$DOTFILES_DIR/ai/claude/skills"
-    fi
-    if [[ -d ~/.claude/agents ]]; then
-        safe_copy_dir ~/.claude/agents "$DOTFILES_DIR/ai/claude/agents"
-    fi
-    if [[ -d ~/.claude/hooks ]]; then
-        safe_copy_dir ~/.claude/hooks "$DOTFILES_DIR/ai/claude/hooks"
-    fi
-fi
-
-# Codex
-ensure_dir "$DOTFILES_DIR/ai/codex"
-if [[ -d ~/.codex ]]; then
-    safe_copy ~/.codex/config.toml "$DOTFILES_DIR/ai/codex/config.toml"
-    safe_copy ~/.codex/AGENTS.md "$DOTFILES_DIR/ai/codex/AGENTS.md"
-    if [[ -d ~/.codex/rules ]]; then
-        safe_copy_dir ~/.codex/rules "$DOTFILES_DIR/ai/codex/rules"
-    fi
-    if [[ -d ~/.codex/skills ]]; then
-        safe_copy_dir ~/.codex/skills "$DOTFILES_DIR/ai/codex/skills"
-    fi
-    if [[ -d ~/.codex/automations ]]; then
-        safe_copy_dir ~/.codex/automations "$DOTFILES_DIR/ai/codex/automations"
-    fi
-fi
-
-# opencode
-ensure_dir "$DOTFILES_DIR/ai/opencode"
-if [[ -d ~/.config/opencode ]]; then
-    safe_copy ~/.config/opencode/opencode.json "$DOTFILES_DIR/ai/opencode/opencode.json"
-fi
-
-# ============================================================================
 # Generate secrets checklist
 # ============================================================================
 print_status "Generating secrets checklist..."

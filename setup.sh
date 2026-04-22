@@ -354,63 +354,16 @@ else
 fi
 
 # ============================================================================
-# AI Tools (Claude Code, Codex, opencode)
+# AI Tools (install only; configs are not synced)
 # ============================================================================
-print_step "Setting up AI tools"
+print_step "Installing AI tools"
 
-# Install Claude Code CLI
 if ! command -v claude &> /dev/null; then
     print_status "Installing Claude Code..."
     curl -fsSL https://claude.ai/install.sh | bash
     print_success "Claude Code installed"
 else
     print_success "Claude Code already installed"
-fi
-
-# Claude Code configs
-if [[ -d "$DOTFILES_DIR/ai/claude" ]]; then
-    mkdir -p ~/.claude
-    [[ -f "$DOTFILES_DIR/ai/claude/settings.json" ]] && cp "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json
-    [[ -f "$DOTFILES_DIR/ai/claude/keybindings.json" ]] && cp "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json
-    [[ -f "$DOTFILES_DIR/ai/claude/CLAUDE.md" ]] && cp "$DOTFILES_DIR/ai/claude/CLAUDE.md" ~/.claude/CLAUDE.md
-    [[ -f "$DOTFILES_DIR/ai/claude/memory.md" ]] && cp "$DOTFILES_DIR/ai/claude/memory.md" ~/.claude/memory.md
-    if [[ -d "$DOTFILES_DIR/ai/claude/commands" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/claude/commands" ~/.claude/commands
-    fi
-    if [[ -d "$DOTFILES_DIR/ai/claude/skills" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/claude/skills" ~/.claude/skills
-    fi
-    if [[ -d "$DOTFILES_DIR/ai/claude/agents" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/claude/agents" ~/.claude/agents
-    fi
-    if [[ -d "$DOTFILES_DIR/ai/claude/hooks" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/claude/hooks" ~/.claude/hooks
-    fi
-    print_success "Claude Code configs imported"
-fi
-
-# Codex
-if [[ -d "$DOTFILES_DIR/ai/codex" ]]; then
-    mkdir -p ~/.codex
-    [[ -f "$DOTFILES_DIR/ai/codex/config.toml" ]] && cp "$DOTFILES_DIR/ai/codex/config.toml" ~/.codex/config.toml
-    [[ -f "$DOTFILES_DIR/ai/codex/AGENTS.md" ]] && cp "$DOTFILES_DIR/ai/codex/AGENTS.md" ~/.codex/AGENTS.md
-    if [[ -d "$DOTFILES_DIR/ai/codex/rules" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/codex/rules" ~/.codex/rules
-    fi
-    if [[ -d "$DOTFILES_DIR/ai/codex/skills" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/codex/skills" ~/.codex/skills
-    fi
-    if [[ -d "$DOTFILES_DIR/ai/codex/automations" ]]; then
-        sync_dir_contents "$DOTFILES_DIR/ai/codex/automations" ~/.codex/automations
-    fi
-    print_success "Codex configs imported"
-fi
-
-# opencode
-if [[ -d "$DOTFILES_DIR/ai/opencode" ]]; then
-    mkdir -p ~/.config/opencode
-    [[ -f "$DOTFILES_DIR/ai/opencode/opencode.json" ]] && cp "$DOTFILES_DIR/ai/opencode/opencode.json" ~/.config/opencode/opencode.json
-    print_success "opencode configs imported"
 fi
 
 # ============================================================================

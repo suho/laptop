@@ -83,7 +83,7 @@ fi
 print_status "Checking core CLI tools"
 
 for command_name in \
-    fish starship nvim git git-lfs gh lazygit btop fzf rg fd jq tree curl mise opencode ffmpeg gpg
+    fish starship nvim git git-lfs gh lazygit btop fzf rg fd jq tree curl mise opencode claude ffmpeg gpg
 do
     assert_command "$command_name"
 done
@@ -105,9 +105,6 @@ assert_synced_path "dotfiles/cli/aerospace/aerospace.toml" "$HOME/.config/aerosp
 assert_synced_path "dotfiles/mise/config.toml" "$HOME/.config/mise/config.toml"
 assert_synced_path "dotfiles/mise/.tool-versions" "$HOME/.tool-versions"
 assert_synced_path "dotfiles/mise/.default-gems" "$HOME/.default-gems"
-assert_synced_path "dotfiles/ai/claude" "$HOME/.claude"
-assert_synced_path "dotfiles/ai/codex" "$HOME/.codex"
-assert_synced_path "dotfiles/ai/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 
 print_status "Checking shell configuration"
 

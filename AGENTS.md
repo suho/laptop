@@ -23,8 +23,7 @@ laptop/
 │   ├── editors/nvim/      # LazyVim config under ~/.config/nvim
 │   ├── terminal/          # Ghostty, Starship configs
 │   ├── cli/               # gh, lazygit, btop, aerospace
-│   ├── mise/              # mise config (runtimes installed on demand)
-│   └── ai/                # Claude Code, Codex, opencode settings
+│   └── mise/              # mise config (runtimes installed on demand)
 ├── Brewfile               # Homebrew bundle manifest
 ├── secrets-checklist.md   # List of secrets to manually restore
 └── macbook-migration-checklist.md  # Reference document

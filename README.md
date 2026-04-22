@@ -2,6 +2,8 @@
 
 Personal macOS laptop setup and migration toolkit.
 
+AI tools are installed on new machines, but their local configs and data are not exported or synced by this repo.
+
 ## Tools Managed
 
 | Category | Tools |
@@ -67,8 +69,7 @@ dotfiles/
 ├── terminal/       # Ghostty, Starship
 ├── editors/nvim/   # LazyVim config under ~/.config/nvim
 ├── cli/            # gh, lazygit, btop, aerospace
-├── mise/           # Runtime version manager
-└── ai/             # Claude Code, Codex, opencode
+└── mise/           # Runtime version manager
 ```
 
 ## Manual Steps After Setup
