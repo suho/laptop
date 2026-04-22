@@ -26,17 +26,12 @@ chmod 644 ~/.ssh/*.pub ~/.ssh/config ~/.ssh/known_hosts
 ## CLI Authentication
 
 - [ ] `gh auth login` - GitHub CLI
-- [ ] `gcloud auth login` - Google Cloud
-- [ ] `aws configure` - AWS CLI
 
 ## Config Files with Tokens
 
-- [ ] `~/.netrc` - Contains authentication tokens
 - [ ] `~/.npmrc` - May contain npm tokens
 - [ ] `~/.sentryclirc` - Sentry auth token
 - [ ] `~/.config/gh/hosts.yml` - GitHub CLI tokens
-- [ ] `~/.aws/credentials` - AWS credentials
-- [ ] `~/.config/gcloud/credentials.db` - Google Cloud credentials
 
 ## App Sign-ins
 

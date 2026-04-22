@@ -157,8 +157,6 @@ if [[ -d ~/me/raycast ]]; then
     safe_copy_dir ~/me/raycast "$DOTFILES_DIR/cli/raycast"
 fi
 
-# Other CLI configs
-safe_copy ~/.lldbinit "$DOTFILES_DIR/cli/.lldbinit"
 
 # ============================================================================
 # mise (runtime version manager)

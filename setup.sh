@@ -245,8 +245,6 @@ if [[ -f "$DOTFILES_DIR/cli/aerospace/aerospace.toml" ]]; then
     print_success "AeroSpace config imported"
 fi
 
-# Other CLI configs
-[[ -f "$DOTFILES_DIR/cli/.lldbinit" ]] && cp "$DOTFILES_DIR/cli/.lldbinit" ~/.lldbinit
 
 # ============================================================================
 # mise (runtime version manager)
@@ -349,10 +347,8 @@ echo ""
 echo "  2. Import GPG key:"
 echo "     gpg --import gpg-key.asc"
 echo ""
-echo "  3. Authenticate CLI tools:"
+echo "  3. Authenticate GitHub CLI:"
 echo "     gh auth login"
-echo "     gcloud auth login"
-echo "     aws configure"
 echo ""
 echo "  4. Sign in to apps:"
 echo "     1Password, Slack, Telegram, Obsidian, Raycast"

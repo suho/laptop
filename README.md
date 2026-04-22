@@ -2,6 +2,19 @@
 
 Personal macOS laptop setup and migration toolkit.
 
+## Tools Managed
+
+| Category | Tools |
+|----------|-------|
+| Shell | Fish, Starship prompt |
+| Terminal | Ghostty |
+| Editor | Neovim |
+| Window Mgmt | AeroSpace, Raycast |
+| Productivity | Obsidian, MeetingBar, Itsycal, 1Password |
+| CLI | gh, LazyGit, btop |
+| Communication | Slack, Telegram |
+| Runtimes | mise (install on demand) |
+
 ## Quick Start
 
 ### On your OLD Mac (export configs)
@@ -37,7 +50,7 @@ git pull
 ./sync.sh pull
 ```
 
-## What's Included
+## Scripts
 
 | Script | Purpose |
 |--------|---------|
@@ -52,20 +65,18 @@ dotfiles/
 ├── fish/           # Fish shell config
 ├── git/            # .gitconfig, .gitignore_global
 ├── ssh/            # SSH config (not keys)
-├── terminal/       # Ghostty, Warp, Starship
-├── editors/        # VS Code, Zed, Neovim
+├── terminal/       # Ghostty, Starship
+├── editors/nvim/   # Neovim
 ├── cli/            # gh, lazygit, btop, aerospace
 ├── mise/           # Runtime version manager
 └── claude/         # Claude Code settings
 ```
 
-## Manual Steps
-
-After running `setup.sh`, complete these manually:
+## Manual Steps After Setup
 
 1. Copy SSH keys and fix permissions
 2. Import GPG key: `gpg --import gpg-key.asc`
-3. Authenticate: `gh auth login`, `gcloud auth login`, `aws configure`
-4. Sign in to apps: 1Password, Slack, Obsidian, Raycast
+3. Authenticate GitHub CLI: `gh auth login`
+4. Sign in to apps: 1Password, Slack, Telegram, Obsidian, Raycast
 
 See `secrets-checklist.md` for full list.
