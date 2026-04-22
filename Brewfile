@@ -1,5 +1,5 @@
 # Brewfile - Homebrew bundle manifest
-# Updated by export.sh / sync.sh from the current machine state
+# Source of truth for packages installed by setup.sh
 
 # Taps
 tap "nikitabobko/tap"
@@ -28,7 +28,7 @@ brew "mise"
 # AI Tools
 # =============================================================================
 brew "opencode"
-# Claude Code is installed via curl script in setup.sh
+cask "claude-code"
 cask "codex"
 cask "codex-app"
 
@@ -46,7 +46,6 @@ cask "lm-studio"
 # =============================================================================
 # iOS Development
 # =============================================================================
-brew "xcodes"
 cask "xcodes-app"
 
 # =============================================================================

@@ -4,56 +4,42 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Purpose
 
-Personal macOS laptop setup and migration toolkit. Contains scripts to:
-1. **Export** configs and tool data from an existing Mac into this repository
-2. **Setup** a new Mac with all tools, configs, and data
-3. **Sync** configurations between multiple Macs
+Personal macOS setup repository for provisioning a completely new MacBook. The codebase is setup-only:
+
+1. Install tools and applications from `Brewfile`
+2. Apply setup-time shell and macOS preferences
+3. Apply the setup directly on a real MacBook
+
+This repository no longer supports export or sync workflows.
 
 ## Architecture
 
-```
+```text
 laptop/
-├── export.sh              # Run on OLD Mac: exports configs to dotfiles/
-├── setup.sh               # Run on NEW Mac: installs tools + imports configs
-├── sync.sh                # Sync configs between Macs (push/pull)
-├── dotfiles/              # Synced config files (git-tracked)
-│   ├── fish/              # ~/.config/fish/
-│   ├── git/               # .gitconfig, .gitignore_global, .stCommitMsg
-│   ├── ssh/               # SSH config (NOT private keys)
-│   ├── editors/nvim/      # LazyVim config under ~/.config/nvim
-│   ├── terminal/          # Ghostty, Starship configs
-│   ├── cli/               # gh, lazygit, btop, aerospace
-│   └── mise/              # mise config (runtimes installed on demand)
-├── Brewfile               # Homebrew bundle manifest
-├── secrets-checklist.md   # List of secrets to manually restore
-└── macbook-migration-checklist.md  # Reference document
+├── setup.sh                    # Main bootstrap entrypoint for a fresh Mac
+├── verify.sh                   # Verifies installed tools and shell state
+├── Brewfile                    # Homebrew bundle manifest, source of truth for packages
+└── macbook-setup-checklist.md  # Manual follow-up items not automated by setup.sh
 ```
 
 ## Key Design Decisions
 
-- **Fish shell** instead of Zsh (user preference)
-- **LazyVim on Neovim** as the only editor setup (no VS Code, Zed)
-- **Ghostty** as the only terminal (no Warp)
-- **mise** for runtime version management (install runtimes on demand, not preset)
-- **Secrets excluded** from export - only listed in secrets-checklist.md for manual restoration
-- **Brewfile** is the source of truth for installed applications
-- Scripts are idempotent and can be re-run safely
+- **Fish shell** instead of Zsh
+- **LazyVim on Neovim** as the editor setup
+- **Ghostty** as the terminal
+- **mise** for runtime version management
+- **Brewfile** is the source of truth for installed packages
+- Scripts should be idempotent and safe to re-run
+- The repository currently targets real hardware only, not Tart or other VM flows
 
 ## Shell Script Conventions
 
 - Use `#!/usr/bin/env bash` for portability
 - Enable strict mode: `set -euo pipefail`
-- Detect architecture: `[[ $(uname -m) == "arm64" ]]`
+- Detect architecture with `[[ $(uname -m) == "arm64" ]]`
 - Use functions for logical grouping
-- Print status with colored output for visibility
+- Print clear status output with colors
 
-## Paths Reference
+## Scope
 
-Key config locations on macOS:
-- Fish: `~/.config/fish/`
-- LazyVim / Neovim: `~/.config/nvim/`
-- Ghostty: `~/.config/ghostty/config`
-- mise: `~/.config/mise/config.toml`
-- SSH: `~/.ssh/config` (config only, not keys)
-- Git: `~/.gitconfig`, `~/.gitignore_global`
-- CLI: `~/.config/{gh,lazygit,btop,aerospace}/`
+This repository installs tools and a few system preferences only. Personal application config and local state are out of scope unless the repository structure is expanded again later.

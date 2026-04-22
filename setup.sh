@@ -1,31 +1,46 @@
 #!/usr/bin/env bash
-# setup.sh - Run on NEW Mac to install tools and import configs
+# setup.sh - Bootstrap a real macOS machine with the tools in this repo
 # Usage: ./setup.sh
-#
-# Based on: https://github.com/nimblehq/laptop/blob/main/mac
-# Customized for: Fish shell, mise, personal tool preferences
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
+NONINTERACTIVE="${NONINTERACTIVE:-0}"
+SUDO_PASSWORD="${SUDO_PASSWORD:-}"
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 print_status() { echo -e "${BLUE}==>${NC} $1"; }
 print_success() { echo -e "${GREEN}✓${NC} $1"; }
 print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
 print_error() { echo -e "${RED}✗${NC} $1"; }
-print_step() { echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"; echo -e "${CYAN}  $1${NC}"; echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"; }
+print_step() {
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}  $1${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+}
 
-NONINTERACTIVE="${NONINTERACTIVE:-0}"
-SUDO_PASSWORD="${SUDO_PASSWORD:-}"
+require_macos() {
+    if [[ "$(uname)" != "Darwin" ]]; then
+        print_error "This script only supports macOS"
+        exit 1
+    fi
+}
+
+detect_homebrew_prefix() {
+    if [[ "$(uname -m)" == "arm64" ]]; then
+        HOMEBREW_PREFIX="/opt/homebrew"
+    else
+        HOMEBREW_PREFIX="/usr/local"
+    fi
+}
 
 sudo_run() {
     if [[ -n "$SUDO_PASSWORD" ]]; then
@@ -43,18 +58,29 @@ sudo_validate() {
     fi
 }
 
+keep_sudo_alive() {
+    if [[ -n "$SUDO_PASSWORD" ]]; then
+        return 0
+    fi
+
+    while true; do
+        sudo -n true
+        sleep 60
+        kill -0 "$$" || exit
+    done 2>/dev/null &
+}
+
 install_xcode_clt_noninteractive() {
     local placeholder="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
     local label=""
 
     touch "$placeholder"
-
     label="$(softwareupdate --list 2>/dev/null | awk -F'* Label: ' '/\* Label: .*Command Line Tools/ {print $2}' | tail -n 1)"
 
     if [[ -z "$label" ]]; then
         rm -f "$placeholder"
-        print_error "Unable to find a Command Line Tools update via softwareupdate"
-        return 1
+        print_error "Unable to find a Command Line Tools package from softwareupdate"
+        exit 1
     fi
 
     print_status "Installing Command Line Tools package: $label"
@@ -63,361 +89,165 @@ install_xcode_clt_noninteractive() {
     rm -f "$placeholder"
 }
 
-sync_dir_contents() {
-    local src="$1"
-    local dest="$2"
+install_xcode_clt() {
+    print_step "Installing Xcode Command Line Tools"
 
-    if [[ -d "$src" ]]; then
-        mkdir -p "$dest"
-        rsync -a --delete "$src"/ "$dest"/
+    if xcode-select -p >/dev/null 2>&1; then
+        print_success "Xcode Command Line Tools already installed"
         return 0
     fi
 
-    return 1
-}
-
-# Detect architecture
-ARCH=$(uname -m)
-if [[ "$ARCH" == "arm64" ]]; then
-    HOMEBREW_PREFIX="/opt/homebrew"
-else
-    HOMEBREW_PREFIX="/usr/local"
-fi
-
-# Check if running on macOS
-if [[ "$(uname)" != "Darwin" ]]; then
-    print_error "This script is designed for macOS only"
-    exit 1
-fi
-
-echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║           MacBook Setup Script                           ║"
-echo "║      Run this on your NEW Mac after cloning this repo    ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
-echo "Architecture: $ARCH"
-echo "Homebrew prefix: $HOMEBREW_PREFIX"
-echo ""
-
-# Ask for sudo upfront
-sudo_validate
-
-# Keep sudo alive for interactive runs
-if [[ -z "$SUDO_PASSWORD" ]]; then
-    while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-fi
-
-# ============================================================================
-# Xcode Command Line Tools
-# ============================================================================
-print_step "Installing Xcode Command Line Tools"
-
-if ! xcode-select -p &> /dev/null; then
-    print_status "Installing Xcode Command Line Tools..."
+    print_status "Installing Xcode Command Line Tools"
     if [[ "$NONINTERACTIVE" == "1" ]]; then
         install_xcode_clt_noninteractive
     else
         xcode-select --install || true
 
-        until xcode-select -p &> /dev/null; do
-            print_warning "Complete the Xcode Command Line Tools installation, then press Enter to re-check..."
+        until xcode-select -p >/dev/null 2>&1; do
+            print_warning "Finish the Command Line Tools installer, then press Enter to continue"
             read -r
         done
     fi
 
     print_success "Xcode Command Line Tools installed"
-else
-    print_success "Xcode Command Line Tools already installed"
-fi
+}
 
-# ============================================================================
-# Homebrew
-# ============================================================================
-print_step "Installing Homebrew"
+refresh_homebrew_env() {
+    eval "$("$HOMEBREW_PREFIX/bin/brew" shellenv)"
+}
 
-if ! command -v brew &> /dev/null; then
-    print_status "Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+install_homebrew() {
+    print_step "Installing Homebrew"
 
-    # Add Homebrew to PATH for this session
-    eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
-else
-    print_success "Homebrew already installed"
-fi
-
-# Update Homebrew
-print_status "Updating Homebrew..."
-brew update
-
-# ============================================================================
-# Homebrew Bundle (install all packages)
-# ============================================================================
-print_step "Installing Homebrew packages"
-
-if [[ -f "$SCRIPT_DIR/Brewfile" ]]; then
-    print_status "Installing packages from Brewfile..."
-    if brew bundle --file="$SCRIPT_DIR/Brewfile"; then
-        print_success "Homebrew packages installed"
+    if command -v brew >/dev/null 2>&1; then
+        print_success "Homebrew already installed"
     else
-        print_error "Homebrew package installation failed"
+        print_status "Installing Homebrew"
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    refresh_homebrew_env
+    print_status "Updating Homebrew"
+    brew update
+    print_success "Homebrew ready"
+}
+
+install_brew_bundle() {
+    print_step "Installing Brewfile packages"
+
+    if [[ ! -f "$SCRIPT_DIR/Brewfile" ]]; then
+        print_error "Brewfile not found: $SCRIPT_DIR/Brewfile"
         exit 1
     fi
-else
-    print_warning "Brewfile not found. Run export.sh on your old Mac first."
-fi
 
-# ============================================================================
-# Create config directories
-# ============================================================================
-print_step "Creating config directories"
-
-mkdir -p ~/.config/{fish,mise,ghostty,nvim,lazygit,btop,aerospace,gh}
-mkdir -p ~/.ssh
-
-print_success "Config directories created"
-
-# ============================================================================
-# Import Fish shell configs
-# ============================================================================
-print_step "Setting up Fish shell"
-
-if [[ -d "$DOTFILES_DIR/fish" ]]; then
-    print_status "Importing Fish configs..."
-    sync_dir_contents "$DOTFILES_DIR/fish" ~/.config/fish
-    print_success "Fish configs imported"
-fi
-
-# Set Fish as default shell
-if command -v fish &> /dev/null; then
-    FISH_PATH=$(which fish)
-    if ! grep -q "$FISH_PATH" /etc/shells; then
-        print_status "Adding Fish to /etc/shells..."
-        sudo_run sh -c "printf '%s\n' '$FISH_PATH' >> /etc/shells"
-    fi
-
-    if [[ "$SHELL" != "$FISH_PATH" ]]; then
-        print_status "Setting Fish as default shell..."
-        if [[ "$NONINTERACTIVE" == "1" || -n "$SUDO_PASSWORD" ]]; then
-            sudo_run chsh -s "$FISH_PATH" "$USER"
-        else
-            chsh -s "$FISH_PATH"
-        fi
-        print_success "Fish set as default shell"
+    if brew bundle --file="$SCRIPT_DIR/Brewfile"; then
+        print_success "Brewfile packages installed"
     else
-        print_success "Fish already set as default shell"
+        print_error "brew bundle failed"
+        exit 1
+    fi
+}
+
+ensure_directories() {
+    print_step "Creating application directories"
+
+    mkdir -p "$HOME/.config/fish/functions"
+
+    print_success "Application directories ready"
+}
+
+setup_fish() {
+    print_step "Configuring Fish shell"
+
+    if ! command -v fish >/dev/null 2>&1; then
+        print_error "Fish is not installed even after Brewfile setup"
+        exit 1
     fi
 
-    # Install Fisher (Fish plugin manager)
-    if [[ ! -f ~/.config/fish/functions/fisher.fish ]]; then
-        print_status "Installing Fisher..."
-        if fish -c "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher"; then
-            print_success "Fisher installed"
+    local fish_path
+    fish_path="$(command -v fish)"
+
+    if ! grep -qx "$fish_path" /etc/shells; then
+        print_status "Adding Fish to /etc/shells"
+        printf '%s\n' "$fish_path" | sudo_run tee -a /etc/shells >/dev/null
+    fi
+
+    local current_shell
+    current_shell="$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')"
+    if [[ "$current_shell" != "$fish_path" ]]; then
+        print_status "Setting Fish as the default shell"
+        if ! chsh -s "$fish_path"; then
+            print_warning "Unable to change shell automatically; run: chsh -s $fish_path"
         else
-            print_warning "Failed to install Fisher automatically"
+            print_success "Fish set as the default shell"
         fi
+    else
+        print_success "Fish already set as the default shell"
     fi
 
-    # Install Fish plugins if fish_plugins exists
-    if [[ -f ~/.config/fish/fish_plugins ]]; then
-        print_status "Installing Fish plugins..."
-        if fish -c "fisher update"; then
-            print_success "Fish plugins installed"
-        else
-            print_warning "Fish plugin installation failed; rerun 'fish -c \"fisher update\"' after setup"
-        fi
-    fi
-else
-    print_warning "Fish not installed. Install with: brew install fish"
-fi
-
-# ============================================================================
-# Import Git configs
-# ============================================================================
-print_step "Setting up Git"
-
-if [[ -d "$DOTFILES_DIR/git" ]]; then
-    print_status "Importing Git configs..."
-    [[ -f "$DOTFILES_DIR/git/.gitconfig" ]] && cp "$DOTFILES_DIR/git/.gitconfig" ~/.gitconfig
-    [[ -f "$DOTFILES_DIR/git/.gitignore_global" ]] && cp "$DOTFILES_DIR/git/.gitignore_global" ~/.gitignore_global
-    [[ -f "$DOTFILES_DIR/git/.stCommitMsg" ]] && cp "$DOTFILES_DIR/git/.stCommitMsg" ~/.stCommitMsg
-    print_success "Git configs imported"
-fi
-
-# Install git-lfs
-if command -v git-lfs &> /dev/null; then
-    git lfs install
-    print_success "Git LFS configured"
-fi
-
-# ============================================================================
-# Import SSH config
-# ============================================================================
-print_step "Setting up SSH"
-
-if [[ -f "$DOTFILES_DIR/ssh/config" ]]; then
-    print_status "Importing SSH config..."
-    cp "$DOTFILES_DIR/ssh/config" ~/.ssh/config
-    chmod 644 ~/.ssh/config
-    print_success "SSH config imported"
-fi
-
-print_warning "Remember to copy your SSH keys manually and set permissions:"
-echo "    chmod 600 ~/.ssh/github_suho ~/.ssh/id_ed25519_el"
-
-# ============================================================================
-# Import Terminal configs
-# ============================================================================
-print_step "Setting up Terminal (Ghostty)"
-
-# Ghostty
-if [[ -f "$DOTFILES_DIR/terminal/ghostty/config" ]]; then
-    cp "$DOTFILES_DIR/terminal/ghostty/config" ~/.config/ghostty/config
-    print_success "Ghostty config imported"
-fi
-
-# Starship
-if [[ -f "$DOTFILES_DIR/terminal/starship.toml" ]]; then
-    cp "$DOTFILES_DIR/terminal/starship.toml" ~/.config/starship.toml
-    print_success "Starship config imported"
-fi
-
-# ============================================================================
-# Import Editor configs
-# ============================================================================
-print_step "Setting up LazyVim (Neovim)"
-
-# LazyVim / Neovim
-if [[ -d "$DOTFILES_DIR/editors/nvim" ]]; then
-    sync_dir_contents "$DOTFILES_DIR/editors/nvim" ~/.config/nvim
-    print_success "LazyVim config imported"
-fi
-
-# ============================================================================
-# Import CLI tool configs
-# ============================================================================
-print_step "Setting up CLI tools"
-
-# GitHub CLI
-if [[ -f "$DOTFILES_DIR/cli/gh/config.yml" ]]; then
-    cp "$DOTFILES_DIR/cli/gh/config.yml" ~/.config/gh/config.yml
-    print_success "GitHub CLI config imported (run 'gh auth login' to authenticate)"
-fi
-
-# LazyGit
-if [[ -d "$DOTFILES_DIR/cli/lazygit" ]]; then
-    sync_dir_contents "$DOTFILES_DIR/cli/lazygit" ~/.config/lazygit
-    print_success "LazyGit config imported"
-fi
-
-# btop
-if [[ -d "$DOTFILES_DIR/cli/btop" ]]; then
-    sync_dir_contents "$DOTFILES_DIR/cli/btop" ~/.config/btop
-    print_success "btop config imported"
-fi
-
-# AeroSpace
-if [[ -f "$DOTFILES_DIR/cli/aerospace/aerospace.toml" ]]; then
-    cp "$DOTFILES_DIR/cli/aerospace/aerospace.toml" ~/.config/aerospace/aerospace.toml
-    print_success "AeroSpace config imported"
-fi
-
-
-# ============================================================================
-# mise (runtime version manager)
-# ============================================================================
-print_step "Setting up mise"
-
-if command -v mise &> /dev/null; then
-    # Import mise config
-    if [[ -f "$DOTFILES_DIR/mise/config.toml" ]]; then
-        cp "$DOTFILES_DIR/mise/config.toml" ~/.config/mise/config.toml
-        print_success "mise config imported"
+    if [[ ! -f "$HOME/.config/fish/functions/fisher.fish" ]]; then
+        print_status "Installing Fisher"
+        fish -c "curl -fsSL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source; and fisher install jorgebucaran/fisher"
+        print_success "Fisher installed"
+    else
+        print_success "Fisher already installed"
     fi
 
-    if [[ -f "$DOTFILES_DIR/mise/.tool-versions" ]]; then
-        cp "$DOTFILES_DIR/mise/.tool-versions" ~/.tool-versions
-        print_success "tool-versions imported"
-    fi
+    print_status "Installing Fish plugins"
+    fish -c "fisher install jethrokuan/z"
+    print_success "Fish plugins installed"
+}
 
-    if [[ -f "$DOTFILES_DIR/mise/.default-gems" ]]; then
-        cp "$DOTFILES_DIR/mise/.default-gems" ~/.default-gems
-        print_success "default-gems imported"
-    fi
+configure_macos_defaults() {
+    print_step "Applying macOS defaults"
 
-    # Activate mise
-    print_status "Activating mise..."
-    eval "$(mise activate bash)"
-    print_success "mise activated (install runtimes on demand with: mise use node@latest)"
-else
-    print_warning "mise not installed. Install with: brew install mise"
-fi
+    defaults write NSGlobalDomain KeyRepeat -int 2
+    defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    defaults write com.apple.finder AppleShowAllFiles -bool true
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock autohide-delay -float 0
 
-# ============================================================================
-# AI Tools (install only; configs are not synced)
-# ============================================================================
-print_step "Installing AI tools"
+    print_success "macOS defaults applied"
+    print_warning "Log out or restart apps like Finder and Dock to pick up every change"
+}
 
-if ! command -v claude &> /dev/null; then
-    print_status "Installing Claude Code..."
-    curl -fsSL https://claude.ai/install.sh | bash
-    print_success "Claude Code installed"
-else
-    print_success "Claude Code already installed"
-fi
+print_summary() {
+    print_step "Setup complete"
 
-# ============================================================================
-# macOS System Preferences
-# ============================================================================
-print_step "Configuring macOS preferences"
+    print_success "Real-machine bootstrap finished"
+    echo "Manual follow-up:"
+    echo "  1. Sign in to apps: 1Password, Slack, Telegram, Obsidian, Raycast"
+    echo "  2. Restore SSH keys into ~/.ssh and set permissions"
+    echo "  3. Import your GPG key if needed: gpg --import <keyfile>"
+    echo "  4. Restart the terminal or run: exec fish"
+}
 
-# Keyboard repeat rate
-defaults write NSGlobalDomain KeyRepeat -int 2
-defaults write NSGlobalDomain InitialKeyRepeat -int 15
+main() {
+    require_macos
+    detect_homebrew_prefix
 
-# Trackpad: enable tap to click
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════╗"
+    echo "║             Real MacBook Setup Script                    ║"
+    echo "║        Installs apps, CLIs, and base preferences        ║"
+    echo "╚══════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "Architecture: $(uname -m)"
+    echo "Homebrew prefix: $HOMEBREW_PREFIX"
+    echo ""
 
-# Finder: show hidden files
-defaults write com.apple.finder AppleShowAllFiles -bool true
+    sudo_validate
+    keep_sudo_alive
 
-# Finder: show path bar
-defaults write com.apple.finder ShowPathbar -bool true
+    install_xcode_clt
+    install_homebrew
+    install_brew_bundle
+    ensure_directories
+    setup_fish
+    configure_macos_defaults
+    print_summary
+}
 
-# Dock: auto-hide
-defaults write com.apple.dock autohide -bool true
-
-# Dock: remove delay
-defaults write com.apple.dock autohide-delay -float 0
-
-print_success "macOS preferences configured"
-print_warning "Some changes require logout/restart to take effect"
-
-# ============================================================================
-# Summary
-# ============================================================================
-echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║                    Setup Complete!                       ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
-print_success "Tools and configs have been installed!"
-echo ""
-print_warning "Manual steps remaining:"
-echo ""
-echo "  1. Copy SSH keys and set permissions:"
-echo "     chmod 600 ~/.ssh/github_suho ~/.ssh/id_ed25519_el"
-echo ""
-echo "  2. Import GPG key:"
-echo "     gpg --import gpg-key.asc"
-echo ""
-echo "  3. Authenticate GitHub CLI:"
-echo "     gh auth login"
-echo ""
-echo "  4. Sign in to apps:"
-echo "     1Password, Slack, Telegram, Obsidian, Raycast"
-echo ""
-echo "  5. Review secrets-checklist.md for other items"
-echo ""
-echo "  6. Restart your terminal or run: exec fish"
-echo ""
+main "$@"
