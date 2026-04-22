@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sync.sh - Sync configs between Macs via this repository
 # Usage: ./sync.sh [push|pull]
-#   push - Export current configs to dotfiles/ and commit
+#   push - Export current configs to dotfiles/
 #   pull - Import configs from dotfiles/ to local system
 
 set -euo pipefail
@@ -37,7 +37,7 @@ safe_copy_dir() {
     local dest="$2"
     if [[ -d "$src" ]]; then
         mkdir -p "$dest"
-        cp -R "$src"/* "$dest"/ 2>/dev/null || cp -R "$src"/.[!.]* "$dest"/ 2>/dev/null || true
+        rsync -a --delete "$src"/ "$dest"/
         return 0
     fi
     return 1
@@ -54,8 +54,8 @@ do_push() {
 
     # Git
     safe_copy ~/.gitconfig "$DOTFILES_DIR/git/.gitconfig" && print_success ".gitconfig"
-    safe_copy ~/.gitignore_global "$DOTFILES_DIR/git/.gitignore_global"
-    safe_copy ~/.stCommitMsg "$DOTFILES_DIR/git/.stCommitMsg"
+    if safe_copy ~/.gitignore_global "$DOTFILES_DIR/git/.gitignore_global"; then print_success ".gitignore_global"; fi
+    if safe_copy ~/.stCommitMsg "$DOTFILES_DIR/git/.stCommitMsg"; then print_success ".stCommitMsg"; fi
 
     # SSH config only
     safe_copy ~/.ssh/config "$DOTFILES_DIR/ssh/config" && print_success "SSH config"
@@ -64,8 +64,8 @@ do_push() {
     safe_copy ~/.config/ghostty/config "$DOTFILES_DIR/terminal/ghostty/config" && print_success "Ghostty"
     safe_copy ~/.config/starship.toml "$DOTFILES_DIR/terminal/starship.toml" && print_success "Starship"
 
-    # Editor
-    safe_copy_dir ~/.config/nvim "$DOTFILES_DIR/editors/nvim" && print_success "Neovim"
+    # Editor (LazyVim / Neovim)
+    safe_copy_dir ~/.config/nvim "$DOTFILES_DIR/editors/nvim" && print_success "LazyVim"
 
     # CLI tools
     safe_copy ~/.config/gh/config.yml "$DOTFILES_DIR/cli/gh/config.yml" && print_success "GitHub CLI"
@@ -75,13 +75,23 @@ do_push() {
 
     # mise
     safe_copy ~/.config/mise/config.toml "$DOTFILES_DIR/mise/config.toml" && print_success "mise"
-    safe_copy ~/.tool-versions "$DOTFILES_DIR/mise/.tool-versions"
-    safe_copy ~/.default-gems "$DOTFILES_DIR/mise/.default-gems"
+    if safe_copy ~/.tool-versions "$DOTFILES_DIR/mise/.tool-versions"; then print_success ".tool-versions"; fi
+    if safe_copy ~/.default-gems "$DOTFILES_DIR/mise/.default-gems"; then print_success ".default-gems"; fi
 
     # AI tools
     safe_copy ~/.claude/settings.json "$DOTFILES_DIR/ai/claude/settings.json" && print_success "Claude Code"
-    safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"
+    if safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"; then print_success "Claude keybindings"; fi
+    if safe_copy ~/.claude/CLAUDE.md "$DOTFILES_DIR/ai/claude/CLAUDE.md"; then print_success "Claude profile"; fi
+    if safe_copy ~/.claude/memory.md "$DOTFILES_DIR/ai/claude/memory.md"; then print_success "Claude memory"; fi
+    if [[ -d ~/.claude/commands ]]; then safe_copy_dir ~/.claude/commands "$DOTFILES_DIR/ai/claude/commands" && print_success "Claude commands"; fi
+    if [[ -d ~/.claude/skills ]]; then safe_copy_dir ~/.claude/skills "$DOTFILES_DIR/ai/claude/skills" && print_success "Claude skills"; fi
+    if [[ -d ~/.claude/agents ]]; then safe_copy_dir ~/.claude/agents "$DOTFILES_DIR/ai/claude/agents" && print_success "Claude agents"; fi
+    if [[ -d ~/.claude/hooks ]]; then safe_copy_dir ~/.claude/hooks "$DOTFILES_DIR/ai/claude/hooks" && print_success "Claude hooks"; fi
     safe_copy ~/.codex/config.toml "$DOTFILES_DIR/ai/codex/config.toml" && print_success "Codex"
+    if safe_copy ~/.codex/AGENTS.md "$DOTFILES_DIR/ai/codex/AGENTS.md"; then print_success "Codex AGENTS"; fi
+    if [[ -d ~/.codex/rules ]]; then safe_copy_dir ~/.codex/rules "$DOTFILES_DIR/ai/codex/rules" && print_success "Codex rules"; fi
+    if [[ -d ~/.codex/skills ]]; then safe_copy_dir ~/.codex/skills "$DOTFILES_DIR/ai/codex/skills" && print_success "Codex skills"; fi
+    if [[ -d ~/.codex/automations ]]; then safe_copy_dir ~/.codex/automations "$DOTFILES_DIR/ai/codex/automations" && print_success "Codex automations"; fi
     safe_copy ~/.config/opencode/opencode.json "$DOTFILES_DIR/ai/opencode/opencode.json" && print_success "opencode"
 
     # Update Brewfile
@@ -107,8 +117,8 @@ do_pull() {
 
     # Git
     safe_copy "$DOTFILES_DIR/git/.gitconfig" ~/.gitconfig && print_success ".gitconfig"
-    safe_copy "$DOTFILES_DIR/git/.gitignore_global" ~/.gitignore_global
-    safe_copy "$DOTFILES_DIR/git/.stCommitMsg" ~/.stCommitMsg
+    if safe_copy "$DOTFILES_DIR/git/.gitignore_global" ~/.gitignore_global; then print_success ".gitignore_global"; fi
+    if safe_copy "$DOTFILES_DIR/git/.stCommitMsg" ~/.stCommitMsg; then print_success ".stCommitMsg"; fi
 
     # SSH config only
     safe_copy "$DOTFILES_DIR/ssh/config" ~/.ssh/config && chmod 644 ~/.ssh/config && print_success "SSH config"
@@ -118,9 +128,9 @@ do_pull() {
     safe_copy "$DOTFILES_DIR/terminal/ghostty/config" ~/.config/ghostty/config && print_success "Ghostty"
     safe_copy "$DOTFILES_DIR/terminal/starship.toml" ~/.config/starship.toml && print_success "Starship"
 
-    # Editor
+    # Editor (LazyVim / Neovim)
     mkdir -p ~/.config/nvim
-    [[ -d "$DOTFILES_DIR/editors/nvim" ]] && safe_copy_dir "$DOTFILES_DIR/editors/nvim" ~/.config/nvim && print_success "Neovim"
+    [[ -d "$DOTFILES_DIR/editors/nvim" ]] && safe_copy_dir "$DOTFILES_DIR/editors/nvim" ~/.config/nvim && print_success "LazyVim"
 
     # CLI tools
     mkdir -p ~/.config/gh ~/.config/lazygit ~/.config/btop ~/.config/aerospace
@@ -132,14 +142,24 @@ do_pull() {
     # mise
     mkdir -p ~/.config/mise
     safe_copy "$DOTFILES_DIR/mise/config.toml" ~/.config/mise/config.toml && print_success "mise"
-    safe_copy "$DOTFILES_DIR/mise/.tool-versions" ~/.tool-versions
-    safe_copy "$DOTFILES_DIR/mise/.default-gems" ~/.default-gems
+    if safe_copy "$DOTFILES_DIR/mise/.tool-versions" ~/.tool-versions; then print_success ".tool-versions"; fi
+    if safe_copy "$DOTFILES_DIR/mise/.default-gems" ~/.default-gems; then print_success ".default-gems"; fi
 
     # AI tools
     mkdir -p ~/.claude ~/.codex ~/.config/opencode
     safe_copy "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json && print_success "Claude Code"
-    safe_copy "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json
+    if safe_copy "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json; then print_success "Claude keybindings"; fi
+    if safe_copy "$DOTFILES_DIR/ai/claude/CLAUDE.md" ~/.claude/CLAUDE.md; then print_success "Claude profile"; fi
+    if safe_copy "$DOTFILES_DIR/ai/claude/memory.md" ~/.claude/memory.md; then print_success "Claude memory"; fi
+    [[ -d "$DOTFILES_DIR/ai/claude/commands" ]] && safe_copy_dir "$DOTFILES_DIR/ai/claude/commands" ~/.claude/commands && print_success "Claude commands"
+    [[ -d "$DOTFILES_DIR/ai/claude/skills" ]] && safe_copy_dir "$DOTFILES_DIR/ai/claude/skills" ~/.claude/skills && print_success "Claude skills"
+    [[ -d "$DOTFILES_DIR/ai/claude/agents" ]] && safe_copy_dir "$DOTFILES_DIR/ai/claude/agents" ~/.claude/agents && print_success "Claude agents"
+    [[ -d "$DOTFILES_DIR/ai/claude/hooks" ]] && safe_copy_dir "$DOTFILES_DIR/ai/claude/hooks" ~/.claude/hooks && print_success "Claude hooks"
     safe_copy "$DOTFILES_DIR/ai/codex/config.toml" ~/.codex/config.toml && print_success "Codex"
+    if safe_copy "$DOTFILES_DIR/ai/codex/AGENTS.md" ~/.codex/AGENTS.md; then print_success "Codex AGENTS"; fi
+    [[ -d "$DOTFILES_DIR/ai/codex/rules" ]] && safe_copy_dir "$DOTFILES_DIR/ai/codex/rules" ~/.codex/rules && print_success "Codex rules"
+    [[ -d "$DOTFILES_DIR/ai/codex/skills" ]] && safe_copy_dir "$DOTFILES_DIR/ai/codex/skills" ~/.codex/skills && print_success "Codex skills"
+    [[ -d "$DOTFILES_DIR/ai/codex/automations" ]] && safe_copy_dir "$DOTFILES_DIR/ai/codex/automations" ~/.codex/automations && print_success "Codex automations"
     safe_copy "$DOTFILES_DIR/ai/opencode/opencode.json" ~/.config/opencode/opencode.json && print_success "opencode"
 
     echo ""

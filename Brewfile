@@ -1,5 +1,5 @@
-# Brewfile - Curated package list
-# Generated based on user preferences
+# Brewfile - Homebrew bundle manifest
+# Updated by export.sh / sync.sh from the current machine state
 
 # Taps
 tap "nikitabobko/tap"
@@ -22,6 +22,7 @@ brew "jq"
 brew "tree"
 brew "curl"
 brew "coreutils"
+brew "mise"
 
 # =============================================================================
 # AI Tools
@@ -64,6 +65,11 @@ brew "pinentry-mac"
 # =============================================================================
 cask "obsidian"
 cask "meetingbar"
+cask "itsycal"
+cask "1password"
+cask "raycast"
+cask "shottr"
+cask "the-unarchiver"
 
 # =============================================================================
 # Communication

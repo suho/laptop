@@ -24,6 +24,19 @@ print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
 print_error() { echo -e "${RED}✗${NC} $1"; }
 print_step() { echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"; echo -e "${CYAN}  $1${NC}"; echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"; }
 
+sync_dir_contents() {
+    local src="$1"
+    local dest="$2"
+
+    if [[ -d "$src" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete "$src"/ "$dest"/
+        return 0
+    fi
+
+    return 1
+}
+
 # Detect architecture
 ARCH=$(uname -m)
 if [[ "$ARCH" == "arm64" ]]; then
@@ -61,11 +74,14 @@ print_step "Installing Xcode Command Line Tools"
 
 if ! xcode-select -p &> /dev/null; then
     print_status "Installing Xcode Command Line Tools..."
-    xcode-select --install
+    xcode-select --install || true
 
-    # Wait for installation to complete
-    print_warning "Please complete the Xcode Command Line Tools installation, then press Enter to continue..."
-    read -r
+    until xcode-select -p &> /dev/null; do
+        print_warning "Complete the Xcode Command Line Tools installation, then press Enter to re-check..."
+        read -r
+    done
+
+    print_success "Xcode Command Line Tools installed"
 else
     print_success "Xcode Command Line Tools already installed"
 fi
@@ -96,8 +112,12 @@ print_step "Installing Homebrew packages"
 
 if [[ -f "$SCRIPT_DIR/Brewfile" ]]; then
     print_status "Installing packages from Brewfile..."
-    brew bundle --file="$SCRIPT_DIR/Brewfile" || true
-    print_success "Homebrew packages installed"
+    if brew bundle --file="$SCRIPT_DIR/Brewfile"; then
+        print_success "Homebrew packages installed"
+    else
+        print_error "Homebrew package installation failed"
+        exit 1
+    fi
 else
     print_warning "Brewfile not found. Run export.sh on your old Mac first."
 fi
@@ -119,7 +139,7 @@ print_step "Setting up Fish shell"
 
 if [[ -d "$DOTFILES_DIR/fish" ]]; then
     print_status "Importing Fish configs..."
-    cp -R "$DOTFILES_DIR/fish"/* ~/.config/fish/ 2>/dev/null || true
+    sync_dir_contents "$DOTFILES_DIR/fish" ~/.config/fish
     print_success "Fish configs imported"
 fi
 
@@ -142,13 +162,21 @@ if command -v fish &> /dev/null; then
     # Install Fisher (Fish plugin manager)
     if [[ ! -f ~/.config/fish/functions/fisher.fish ]]; then
         print_status "Installing Fisher..."
-        fish -c "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher"
+        if fish -c "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher"; then
+            print_success "Fisher installed"
+        else
+            print_warning "Failed to install Fisher automatically"
+        fi
     fi
 
     # Install Fish plugins if fish_plugins exists
     if [[ -f ~/.config/fish/fish_plugins ]]; then
         print_status "Installing Fish plugins..."
-        fish -c "fisher update" || true
+        if fish -c "fisher update"; then
+            print_success "Fish plugins installed"
+        else
+            print_warning "Fish plugin installation failed; rerun 'fish -c \"fisher update\"' after setup"
+        fi
     fi
 else
     print_warning "Fish not installed. Install with: brew install fish"
@@ -208,12 +236,12 @@ fi
 # ============================================================================
 # Import Editor configs
 # ============================================================================
-print_step "Setting up Neovim"
+print_step "Setting up LazyVim (Neovim)"
 
-# Neovim
+# LazyVim / Neovim
 if [[ -d "$DOTFILES_DIR/editors/nvim" ]]; then
-    cp -R "$DOTFILES_DIR/editors/nvim"/* ~/.config/nvim/ 2>/dev/null || true
-    print_success "Neovim config imported"
+    sync_dir_contents "$DOTFILES_DIR/editors/nvim" ~/.config/nvim
+    print_success "LazyVim config imported"
 fi
 
 # ============================================================================
@@ -229,13 +257,13 @@ fi
 
 # LazyGit
 if [[ -d "$DOTFILES_DIR/cli/lazygit" ]]; then
-    cp -R "$DOTFILES_DIR/cli/lazygit"/* ~/.config/lazygit/ 2>/dev/null || true
+    sync_dir_contents "$DOTFILES_DIR/cli/lazygit" ~/.config/lazygit
     print_success "LazyGit config imported"
 fi
 
 # btop
 if [[ -d "$DOTFILES_DIR/cli/btop" ]]; then
-    cp -R "$DOTFILES_DIR/cli/btop"/* ~/.config/btop/ 2>/dev/null || true
+    sync_dir_contents "$DOTFILES_DIR/cli/btop" ~/.config/btop
     print_success "btop config imported"
 fi
 
@@ -286,9 +314,19 @@ if [[ -d "$DOTFILES_DIR/ai/claude" ]]; then
     mkdir -p ~/.claude
     [[ -f "$DOTFILES_DIR/ai/claude/settings.json" ]] && cp "$DOTFILES_DIR/ai/claude/settings.json" ~/.claude/settings.json
     [[ -f "$DOTFILES_DIR/ai/claude/keybindings.json" ]] && cp "$DOTFILES_DIR/ai/claude/keybindings.json" ~/.claude/keybindings.json
+    [[ -f "$DOTFILES_DIR/ai/claude/CLAUDE.md" ]] && cp "$DOTFILES_DIR/ai/claude/CLAUDE.md" ~/.claude/CLAUDE.md
+    [[ -f "$DOTFILES_DIR/ai/claude/memory.md" ]] && cp "$DOTFILES_DIR/ai/claude/memory.md" ~/.claude/memory.md
     if [[ -d "$DOTFILES_DIR/ai/claude/commands" ]]; then
-        mkdir -p ~/.claude/commands
-        cp -R "$DOTFILES_DIR/ai/claude/commands"/* ~/.claude/commands/ 2>/dev/null || true
+        sync_dir_contents "$DOTFILES_DIR/ai/claude/commands" ~/.claude/commands
+    fi
+    if [[ -d "$DOTFILES_DIR/ai/claude/skills" ]]; then
+        sync_dir_contents "$DOTFILES_DIR/ai/claude/skills" ~/.claude/skills
+    fi
+    if [[ -d "$DOTFILES_DIR/ai/claude/agents" ]]; then
+        sync_dir_contents "$DOTFILES_DIR/ai/claude/agents" ~/.claude/agents
+    fi
+    if [[ -d "$DOTFILES_DIR/ai/claude/hooks" ]]; then
+        sync_dir_contents "$DOTFILES_DIR/ai/claude/hooks" ~/.claude/hooks
     fi
     print_success "Claude Code configs imported"
 fi
@@ -299,16 +337,13 @@ if [[ -d "$DOTFILES_DIR/ai/codex" ]]; then
     [[ -f "$DOTFILES_DIR/ai/codex/config.toml" ]] && cp "$DOTFILES_DIR/ai/codex/config.toml" ~/.codex/config.toml
     [[ -f "$DOTFILES_DIR/ai/codex/AGENTS.md" ]] && cp "$DOTFILES_DIR/ai/codex/AGENTS.md" ~/.codex/AGENTS.md
     if [[ -d "$DOTFILES_DIR/ai/codex/rules" ]]; then
-        mkdir -p ~/.codex/rules
-        cp -R "$DOTFILES_DIR/ai/codex/rules"/* ~/.codex/rules/ 2>/dev/null || true
+        sync_dir_contents "$DOTFILES_DIR/ai/codex/rules" ~/.codex/rules
     fi
     if [[ -d "$DOTFILES_DIR/ai/codex/skills" ]]; then
-        mkdir -p ~/.codex/skills
-        cp -R "$DOTFILES_DIR/ai/codex/skills"/* ~/.codex/skills/ 2>/dev/null || true
+        sync_dir_contents "$DOTFILES_DIR/ai/codex/skills" ~/.codex/skills
     fi
     if [[ -d "$DOTFILES_DIR/ai/codex/automations" ]]; then
-        mkdir -p ~/.codex/automations
-        cp -R "$DOTFILES_DIR/ai/codex/automations"/* ~/.codex/automations/ 2>/dev/null || true
+        sync_dir_contents "$DOTFILES_DIR/ai/codex/automations" ~/.codex/automations
     fi
     print_success "Codex configs imported"
 fi

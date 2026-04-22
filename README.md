@@ -8,7 +8,7 @@ Personal macOS laptop setup and migration toolkit.
 |----------|-------|
 | Shell | Fish, Starship prompt |
 | Terminal | Ghostty |
-| Editor | Neovim |
+| Editor | LazyVim (Neovim) |
 | Window Mgmt | AeroSpace, Raycast |
 | Productivity | Obsidian, MeetingBar, Itsycal, 1Password |
 | CLI | gh, LazyGit, btop |
@@ -63,7 +63,7 @@ dotfiles/
 ├── git/            # .gitconfig, .gitignore_global
 ├── ssh/            # SSH config (not keys)
 ├── terminal/       # Ghostty, Starship
-├── editors/nvim/   # Neovim
+├── editors/nvim/   # LazyVim config under ~/.config/nvim
 ├── cli/            # gh, lazygit, btop, aerospace
 ├── mise/           # Runtime version manager
 └── ai/             # Claude Code, Codex, opencode

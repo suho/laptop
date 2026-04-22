@@ -17,7 +17,7 @@ brew bundle --file ~/Developer/suho/laptop/Brewfile
 | Category | Apps |
 |---|---|
 | Terminal / Shell | Ghostty, Fish, Starship |
-| Editor | Neovim |
+| Editor | LazyVim (Neovim) |
 | Window Mgmt | AeroSpace, Raycast |
 | Productivity | Obsidian, MeetingBar, Itsycal, 1Password |
 | Communication | Slack, Telegram |
@@ -68,7 +68,7 @@ mise use python@latest
 
 ## Editor
 
-### Neovim
+### LazyVim (Neovim)
 
 | What | Path |
 |---|---|
@@ -80,7 +80,7 @@ mise use python@latest
 
 | Tool | Path |
 |---|---|
-| GitHub CLI (`gh`) | `~/.config/gh/` — re-auth: `gh auth login` |
+| GitHub CLI (`gh`) | `~/.config/gh/config.yml` — re-auth: `gh auth login` |
 | LazyGit | `~/.config/lazygit/` |
 | btop | `~/.config/btop/` |
 | AeroSpace | `~/.config/aerospace/aerospace.toml` |
@@ -93,7 +93,7 @@ mise use python@latest
 | App | Path |
 |---|---|
 | Obsidian vault | `~/me/obsidian/vansuho/` (entire vault) |
-| Claude Code | `~/.claude/` (settings, custom commands, memory, skills) |
+| Claude Code | `~/.claude/` (settings, keybindings, `CLAUDE.md`, `memory.md`, custom commands, skills, agents, hooks) |
 | LM Studio | `~/.lmstudio-home-pointer` + downloaded models |
 
 ---

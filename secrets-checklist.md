@@ -33,15 +33,17 @@ chmod 644 ~/.ssh/*.pub ~/.ssh/config ~/.ssh/known_hosts
 - [ ] `~/.sentryclirc` - Sentry auth token
 - [ ] `~/.config/gh/hosts.yml` - GitHub CLI tokens
 
-## App Sign-ins
+## App Data to Transfer Manually
 
+- [ ] Obsidian vault: `~/me/obsidian/vansuho/`
 - [ ] 1Password - Sign in (syncs from cloud)
-- [ ] Slack - Sign in to workspaces
-- [ ] Telegram - Sign in
-- [ ] Obsidian - Sign in for sync
 - [ ] Raycast - Sign in (syncs from cloud)
+
+## Xcode & Development
+
+- [ ] Xcode signing certificates: Export from Keychain Access -> "My Certificates"
+- [ ] Provisioning profiles: Check `~/Library/MobileDevice/Provisioning Profiles/`
 
 ## Other
 
-- [ ] Xcode signing certificates: Export from Keychain Access -> "My Certificates"
 - [ ] LM Studio models: Download fresh or copy from `~/.lmstudio/`

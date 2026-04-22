@@ -29,6 +29,7 @@ safe_copy() {
     local src="$1"
     local dest="$2"
     if [[ -e "$src" ]]; then
+        ensure_dir "$(dirname "$dest")"
         cp -R "$src" "$dest"
         print_success "Copied: $src"
     else
@@ -42,7 +43,7 @@ safe_copy_dir() {
     local dest="$2"
     if [[ -d "$src" ]]; then
         ensure_dir "$dest"
-        cp -R "$src"/* "$dest"/ 2>/dev/null || cp -R "$src"/.[!.]* "$dest"/ 2>/dev/null || true
+        rsync -a --delete "$src"/ "$dest"/
         print_success "Copied directory: $src"
     else
         print_warning "Directory not found: $src"
@@ -123,7 +124,7 @@ safe_copy ~/.config/starship.toml "$DOTFILES_DIR/terminal/starship.toml"
 # ============================================================================
 print_status "Exporting editor configs..."
 
-# Neovim
+# LazyVim / Neovim
 ensure_dir "$DOTFILES_DIR/editors/nvim"
 safe_copy_dir ~/.config/nvim "$DOTFILES_DIR/editors/nvim"
 
@@ -173,8 +174,19 @@ ensure_dir "$DOTFILES_DIR/ai/claude"
 if [[ -d ~/.claude ]]; then
     safe_copy ~/.claude/settings.json "$DOTFILES_DIR/ai/claude/settings.json"
     safe_copy ~/.claude/keybindings.json "$DOTFILES_DIR/ai/claude/keybindings.json"
+    safe_copy ~/.claude/CLAUDE.md "$DOTFILES_DIR/ai/claude/CLAUDE.md"
+    safe_copy ~/.claude/memory.md "$DOTFILES_DIR/ai/claude/memory.md"
     if [[ -d ~/.claude/commands ]]; then
         safe_copy_dir ~/.claude/commands "$DOTFILES_DIR/ai/claude/commands"
+    fi
+    if [[ -d ~/.claude/skills ]]; then
+        safe_copy_dir ~/.claude/skills "$DOTFILES_DIR/ai/claude/skills"
+    fi
+    if [[ -d ~/.claude/agents ]]; then
+        safe_copy_dir ~/.claude/agents "$DOTFILES_DIR/ai/claude/agents"
+    fi
+    if [[ -d ~/.claude/hooks ]]; then
+        safe_copy_dir ~/.claude/hooks "$DOTFILES_DIR/ai/claude/hooks"
     fi
 fi
 
@@ -198,37 +210,6 @@ fi
 ensure_dir "$DOTFILES_DIR/ai/opencode"
 if [[ -d ~/.config/opencode ]]; then
     safe_copy ~/.config/opencode/opencode.json "$DOTFILES_DIR/ai/opencode/opencode.json"
-fi
-
-# ============================================================================
-# Python packages (for reference)
-# ============================================================================
-print_status "Exporting Python packages list..."
-
-if command -v pip3 &> /dev/null; then
-    pip3 freeze > "$DOTFILES_DIR/mise/requirements.txt" 2>/dev/null || true
-    print_success "Exported pip packages to requirements.txt"
-fi
-
-# ============================================================================
-# npm global packages (for reference)
-# ============================================================================
-print_status "Exporting npm global packages list..."
-
-if command -v npm &> /dev/null; then
-    npm list -g --depth=0 --json > "$DOTFILES_DIR/mise/npm-global.json" 2>/dev/null || true
-    print_success "Exported npm global packages"
-fi
-
-# ============================================================================
-# Fonts
-# ============================================================================
-print_status "Listing installed fonts..."
-
-ensure_dir "$DOTFILES_DIR/fonts"
-if [[ -d ~/Library/Fonts ]]; then
-    ls ~/Library/Fonts > "$DOTFILES_DIR/fonts/installed-fonts.txt" 2>/dev/null || true
-    print_success "Listed installed fonts"
 fi
 
 # ============================================================================
@@ -265,24 +246,16 @@ chmod 644 ~/.ssh/*.pub ~/.ssh/config ~/.ssh/known_hosts
 ## CLI Authentication
 
 - [ ] `gh auth login` - GitHub CLI
-- [ ] `gcloud auth login` - Google Cloud
-- [ ] `aws configure` - AWS CLI
-- [ ] `op signin` - 1Password CLI
 
 ## Config Files with Tokens
 
-- [ ] `~/.netrc` - Contains authentication tokens
 - [ ] `~/.npmrc` - May contain npm tokens
 - [ ] `~/.sentryclirc` - Sentry auth token
 - [ ] `~/.config/gh/hosts.yml` - GitHub CLI tokens
-- [ ] `~/.aws/credentials` - AWS credentials
-- [ ] `~/.config/gcloud/credentials.db` - Google Cloud credentials
 
 ## App Data to Transfer Manually
 
 - [ ] Obsidian vault: `~/me/obsidian/vansuho/`
-- [ ] Postman: Export collections/environments from app
-- [ ] TablePlus: Export connections from app
 - [ ] 1Password: Sign in (syncs from cloud)
 - [ ] Raycast: Sign in (syncs from cloud)
 
@@ -293,7 +266,6 @@ chmod 644 ~/.ssh/*.pub ~/.ssh/config ~/.ssh/known_hosts
 
 ## Other
 
-- [ ] Check `~/terraform.tfstate` if still active
 - [ ] LM Studio models: Download fresh or copy from `~/.lmstudio/`
 SECRETS_EOF
 

@@ -20,7 +20,7 @@ laptop/
 │   ├── fish/              # ~/.config/fish/
 │   ├── git/               # .gitconfig, .gitignore_global, .stCommitMsg
 │   ├── ssh/               # SSH config (NOT private keys)
-│   ├── editors/nvim/      # Neovim config
+│   ├── editors/nvim/      # LazyVim config under ~/.config/nvim
 │   ├── terminal/          # Ghostty, Starship configs
 │   ├── cli/               # gh, lazygit, btop, aerospace
 │   ├── mise/              # mise config (runtimes installed on demand)
@@ -33,7 +33,7 @@ laptop/
 ## Key Design Decisions
 
 - **Fish shell** instead of Zsh (user preference)
-- **Neovim** as the only editor (no VS Code, Zed)
+- **LazyVim on Neovim** as the only editor setup (no VS Code, Zed)
 - **Ghostty** as the only terminal (no Warp)
 - **mise** for runtime version management (install runtimes on demand, not preset)
 - **Secrets excluded** from export - only listed in secrets-checklist.md for manual restoration
@@ -52,7 +52,7 @@ laptop/
 
 Key config locations on macOS:
 - Fish: `~/.config/fish/`
-- Neovim: `~/.config/nvim/`
+- LazyVim / Neovim: `~/.config/nvim/`
 - Ghostty: `~/.config/ghostty/config`
 - mise: `~/.config/mise/config.toml`
 - SSH: `~/.ssh/config` (config only, not keys)
