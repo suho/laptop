@@ -217,18 +217,28 @@ configure_fish_init() {
     print_step "Writing Fish shell initialization"
 
     local config_file="$HOME/.config/fish/config.fish"
+    local marker="# --- laptop/setup.sh managed block ---"
 
-    append_line_if_missing "$config_file" 'if test -x '"$HOMEBREW_PREFIX"'/bin/brew'
-    append_line_if_missing "$config_file" '    eval ('"$HOMEBREW_PREFIX"'/bin/brew shellenv)'
-    append_line_if_missing "$config_file" 'end'
-    append_line_if_missing "$config_file" ''
-    append_line_if_missing "$config_file" 'if command -sq mise'
-    append_line_if_missing "$config_file" '    mise activate fish | source'
-    append_line_if_missing "$config_file" 'end'
-    append_line_if_missing "$config_file" ''
-    append_line_if_missing "$config_file" 'if command -sq starship'
-    append_line_if_missing "$config_file" '    starship init fish | source'
-    append_line_if_missing "$config_file" 'end'
+    if grep -Fq "$marker" "$config_file" 2>/dev/null; then
+        print_success "Fish initialization already configured"
+        return 0
+    fi
+
+    cat >>"$config_file" <<EOF
+
+$marker
+if test -x $HOMEBREW_PREFIX/bin/brew
+    eval ($HOMEBREW_PREFIX/bin/brew shellenv)
+end
+
+if command -sq mise
+    mise activate fish | source
+end
+
+if command -sq starship
+    starship init fish | source
+end
+EOF
 
     print_success "Fish initialization updated"
 }
