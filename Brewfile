@@ -1,9 +1,6 @@
 # Brewfile - Homebrew bundle manifest
 # Source of truth for packages installed by setup.sh
 
-# Taps
-tap "nikitabobko/tap"
-
 # =============================================================================
 # Core CLI Tools
 # =============================================================================
@@ -25,10 +22,9 @@ cask "codex"
 cask "codex-app" unless File.directory?("/Applications/Codex.app")
 
 # =============================================================================
-# Terminal & Window Management
+# Terminal
 # =============================================================================
 cask "ghostty@tip" unless File.directory?("/Applications/Ghostty.app")
-cask "nikitabobko/tap/aerospace" unless File.directory?("/Applications/AeroSpace.app")
 
 # =============================================================================
 # Containers
@@ -66,7 +62,6 @@ cask "itsycal" unless File.directory?("/Applications/Itsycal.app")
 cask "1password" unless File.directory?("/Applications/1Password.app")
 cask "raycast" unless File.directory?("/Applications/Raycast.app")
 cask "shottr" unless File.directory?("/Applications/Shottr.app")
-cask "the-unarchiver" unless File.directory?("/Applications/The Unarchiver.app")
 
 # =============================================================================
 # Communication

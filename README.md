@@ -11,9 +11,8 @@ The repo has one job now: install apps, CLI tools, and base preferences onto a f
 | Shell | Fish, Fisher, Starship |
 | Terminal | Ghostty |
 | Editor | Neovim |
-| Window Mgmt | AeroSpace, Raycast |
-| Productivity | Obsidian, MeetingBar, Itsycal, 1Password, Shottr, The Unarchiver |
-| CLI | git, git-lfs, gh, LazyGit, btop, fzf, ripgrep, fd, jq, tree, mise |
+| Productivity | Raycast, Obsidian, MeetingBar, Itsycal, 1Password, Shottr |
+| CLI | git, git-lfs, gh, LazyGit, btop, mise |
 | AI | Claude Code, Codex, opencode, LM Studio |
 | Communication | Slack, Telegram |
 | Browser | Google Chrome |

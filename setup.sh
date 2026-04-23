@@ -164,8 +164,6 @@ ensure_directories() {
     mkdir -p "$HOME/.config/fish/functions"
     mkdir -p "$HOME/.config/fish"
     mkdir -p "$HOME/.config/ghostty"
-    mkdir -p "$HOME/.config/aerospace"
-
     print_success "Application directories ready"
 }
 
@@ -251,7 +249,6 @@ setup_configs() {
     local configs=(
         "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
         "$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config"
-        "$SCRIPT_DIR/configs/aerospace/aerospace.toml:$HOME/.config/aerospace/aerospace.toml"
     )
 
     for entry in "${configs[@]}"; do
