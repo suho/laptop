@@ -204,9 +204,13 @@ setup_fish() {
         print_success "Fisher already installed"
     fi
 
-    print_status "Installing Fish plugins"
-    fish -c "fisher install jethrokuan/z"
-    print_success "Fish plugins installed"
+    if fish -c "fisher list" 2>/dev/null | grep -qx "jethrokuan/z"; then
+        print_success "Fish plugins already installed"
+    else
+        print_status "Installing Fish plugins"
+        fish -c "fisher install jethrokuan/z"
+        print_success "Fish plugins installed"
+    fi
 }
 
 configure_fish_init() {
