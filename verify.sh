@@ -90,8 +90,8 @@ fi
 print_status "Checking CLI tools"
 
 for command_name in \
-    fish starship nvim git git-lfs gh lazygit btop fzf rg fd jq tree curl mise \
-    opencode claude ffmpeg gpg pinentry-mac
+    fish starship nvim git git-lfs gh lazygit btop fzf rg fd jq tree curl coreutils mise \
+    opencode claude ffmpeg openssl gpg pinentry-mac
 do
     assert_command "$command_name"
 done
@@ -99,7 +99,8 @@ done
 print_status "Checking installed casks"
 
 for cask_name in \
-    claude-code codex codex-app ghostty@tip nikitabobko/tap/aerospace@0.19.2 lm-studio xcodes-app obsidian \
+    claude-code claude codex codex-app steipete/tap/codexbar ghostty@tip nikitabobko/tap/aerospace \
+    orbstack lm-studio xcodes-app obsidian \
     meetingbar itsycal 1password raycast shottr the-unarchiver slack telegram \
     google-chrome
 do
