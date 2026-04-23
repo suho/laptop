@@ -3,37 +3,26 @@
 
 # Taps
 tap "nikitabobko/tap"
-tap "steipete/tap"
 
 # =============================================================================
 # Core CLI Tools
 # =============================================================================
 brew "fish"
 brew "starship"
-brew "neovim"
 brew "git"
 brew "git-lfs"
 brew "gh"
 brew "lazygit"
 brew "btop"
-brew "fzf"
-brew "ripgrep"
-brew "fd"
-brew "jq"
-brew "tree"
-brew "curl"
-brew "coreutils"
 brew "mise"
 
 # =============================================================================
 # AI Tools
 # =============================================================================
-brew "opencode"
 cask "claude-code"
 cask "claude" unless File.directory?("/Applications/Claude.app")
 cask "codex"
 cask "codex-app" unless File.directory?("/Applications/Codex.app")
-cask "steipete/tap/codexbar" unless File.directory?("/Applications/CodexBar.app")
 
 # =============================================================================
 # Terminal & Window Management

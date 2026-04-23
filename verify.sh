@@ -90,7 +90,7 @@ fi
 print_status "Checking CLI tools"
 
 for command_name in \
-    fish starship nvim git git-lfs gh lazygit btop fzf rg fd jq tree curl coreutils mise \
+    fish starship git git-lfs gh lazygit btop mise \
     opencode claude ffmpeg openssl gpg pinentry-mac
 do
     assert_command "$command_name"
@@ -99,7 +99,7 @@ done
 print_status "Checking installed casks"
 
 for cask_name in \
-    claude-code claude codex codex-app steipete/tap/codexbar ghostty@tip nikitabobko/tap/aerospace \
+    claude-code claude codex codex-app ghostty@tip nikitabobko/tap/aerospace \
     orbstack lm-studio xcodes-app obsidian \
     meetingbar itsycal 1password raycast shottr the-unarchiver slack telegram \
     google-chrome
@@ -145,6 +145,28 @@ if command -v fish >/dev/null 2>&1; then
         record_failure "Fish plugin missing: jethrokuan/z"
     fi
 fi
+
+print_status "Checking personal configurations"
+
+config_pairs=(
+    "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
+    "$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config"
+    "$SCRIPT_DIR/configs/aerospace/aerospace.toml:$HOME/.config/aerospace/aerospace.toml"
+)
+
+for entry in "${config_pairs[@]}"; do
+    src="${entry%%:*}"
+    dst="${entry#*:}"
+    name="$(basename "$dst")"
+
+    if [[ ! -f "$dst" ]]; then
+        record_failure "Config missing: $dst"
+    elif diff -q "$src" "$dst" >/dev/null 2>&1; then
+        print_success "Config up to date: $name"
+    else
+        print_warning "Config differs from repo: $name"
+    fi
+done
 
 echo ""
 if (( failures == 0 )); then
