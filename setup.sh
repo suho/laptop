@@ -163,6 +163,8 @@ ensure_directories() {
 
     mkdir -p "$HOME/.config/fish/functions"
     mkdir -p "$HOME/.config/fish"
+    mkdir -p "$HOME/.config/ghostty"
+    mkdir -p "$HOME/.config/aerospace"
 
     print_success "Application directories ready"
 }
@@ -243,6 +245,34 @@ EOF
     print_success "Fish initialization updated"
 }
 
+setup_configs() {
+    print_step "Copying personal configurations"
+
+    local configs=(
+        "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
+        "$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config"
+        "$SCRIPT_DIR/configs/aerospace/aerospace.toml:$HOME/.config/aerospace/aerospace.toml"
+    )
+
+    for entry in "${configs[@]}"; do
+        local src="${entry%%:*}"
+        local dst="${entry#*:}"
+
+        mkdir -p "$(dirname "$dst")"
+
+        if [[ -f "$dst" ]] && diff -q "$src" "$dst" >/dev/null 2>&1; then
+            print_success "$(basename "$dst") already up to date"
+        else
+            if [[ -f "$dst" ]]; then
+                mv "$dst" "$dst.backup"
+                print_warning "Backed up existing $(basename "$dst") to $(basename "$dst").backup"
+            fi
+            cp "$src" "$dst"
+            print_success "$(basename "$dst") copied"
+        fi
+    done
+}
+
 configure_macos_defaults() {
     print_step "Applying macOS defaults"
 
@@ -292,6 +322,7 @@ main() {
     ensure_directories
     setup_fish
     configure_fish_init
+    setup_configs
     configure_macos_defaults
     print_status "Cleaning up Homebrew caches and old versions"
     brew cleanup
