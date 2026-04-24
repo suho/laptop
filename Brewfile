@@ -1,5 +1,8 @@
 # Brewfile - Homebrew bundle manifest
 # Source of truth for packages installed by setup.sh
+#
+# Optional tools (AI apps, OrbStack, iOS bundle) are installed interactively
+# by setup.sh, not listed here.
 
 # =============================================================================
 # Core CLI Tools
@@ -14,32 +17,14 @@ brew "btop"
 brew "mise"
 
 # =============================================================================
-# AI Tools
-# =============================================================================
-cask "claude-code"
-cask "claude" unless File.directory?("/Applications/Claude.app")
-cask "codex"
-cask "codex-app" unless File.directory?("/Applications/Codex.app")
-
-# =============================================================================
 # Terminal
 # =============================================================================
 cask "warp" unless File.directory?("/Applications/Warp.app")
 
 # =============================================================================
-# Containers
+# Editor
 # =============================================================================
-cask "orbstack" unless File.directory?("/Applications/OrbStack.app")
-
-# =============================================================================
-# Editor & LLM
-# =============================================================================
-cask "lm-studio" unless File.directory?("/Applications/LM Studio.app")
-
-# =============================================================================
-# iOS Development
-# =============================================================================
-cask "xcodes-app" unless File.directory?("/Applications/Xcodes.app")
+cask "zed" unless File.directory?("/Applications/Zed.app")
 
 # =============================================================================
 # Media Processing
@@ -56,7 +41,6 @@ brew "pinentry-mac"
 # =============================================================================
 # Productivity Apps
 # =============================================================================
-cask "obsidian" unless File.directory?("/Applications/Obsidian.app")
 cask "meetingbar" unless File.directory?("/Applications/MeetingBar.app")
 cask "itsycal" unless File.directory?("/Applications/Itsycal.app")
 cask "1password" unless File.directory?("/Applications/1Password.app")

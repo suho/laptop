@@ -142,6 +142,130 @@ install_homebrew() {
     print_success "Homebrew ready"
 }
 
+install_cask_if_missing() {
+    local cask_name="$1"
+    local app_path="${2:-}"
+
+    if [[ -n "$app_path" && -d "$app_path" ]]; then
+        print_success "$cask_name already present ($app_path)"
+        return 0
+    fi
+
+    if brew list --cask "$cask_name" >/dev/null 2>&1; then
+        print_success "$cask_name already installed"
+        return 0
+    fi
+
+    print_status "Installing $cask_name"
+    brew install --cask "$cask_name"
+}
+
+prompt_yes_no() {
+    local prompt="$1"
+    local default="${2:-n}"
+    local reply hint
+
+    if [[ "$default" == "y" ]]; then
+        hint="[Y/n]"
+    else
+        hint="[y/N]"
+    fi
+
+    while true; do
+        read -r -p "$prompt $hint " reply || reply=""
+        reply="${reply:-$default}"
+        case "$reply" in
+            [Yy]|[Yy][Ee][Ss]) return 0 ;;
+            [Nn]|[Nn][Oo]) return 1 ;;
+            *) echo "Please answer y or n." ;;
+        esac
+    done
+}
+
+install_ai_tools() {
+    local selection="${INSTALL_AI:-}"
+
+    if [[ "$NONINTERACTIVE" != "1" && -z "$selection" ]]; then
+        echo ""
+        echo "AI tools (multi-select, space-separated numbers; empty to skip):"
+        echo "  1) claude-code (+ Claude desktop)"
+        echo "  2) codex (+ Codex desktop)"
+        echo "  3) lm-studio"
+        read -r -p "Select [e.g. '1 3', 'all', or blank]: " selection || selection=""
+    fi
+
+    [[ -z "$selection" || "$selection" == "none" ]] && { print_status "Skipping AI tools"; return 0; }
+
+    if [[ "$selection" == "all" ]]; then
+        selection="1 2 3"
+    fi
+
+    for choice in $selection; do
+        case "$choice" in
+            1|claude)
+                install_cask_if_missing "claude-code"
+                install_cask_if_missing "claude" "/Applications/Claude.app"
+                ;;
+            2|codex)
+                install_cask_if_missing "codex"
+                install_cask_if_missing "codex-app" "/Applications/Codex.app"
+                ;;
+            3|lm-studio|lmstudio)
+                install_cask_if_missing "lm-studio" "/Applications/LM Studio.app"
+                ;;
+            *)
+                print_warning "Unknown AI choice: $choice"
+                ;;
+        esac
+    done
+}
+
+install_web_tools() {
+    local want="${INSTALL_WEB_ORBSTACK:-}"
+
+    if [[ -z "$want" ]]; then
+        if [[ "$NONINTERACTIVE" == "1" ]]; then
+            want="0"
+        else
+            prompt_yes_no "Install OrbStack (containers)?" "n" && want="1" || want="0"
+        fi
+    fi
+
+    if [[ "$want" == "1" || "$want" == "y" || "$want" == "yes" ]]; then
+        install_cask_if_missing "orbstack" "/Applications/OrbStack.app"
+    else
+        print_status "Skipping OrbStack"
+    fi
+}
+
+install_ios_tools() {
+    local want="${INSTALL_IOS:-}"
+
+    if [[ -z "$want" ]]; then
+        if [[ "$NONINTERACTIVE" == "1" ]]; then
+            want="0"
+        else
+            prompt_yes_no "Install iOS dev bundle (Xcodes, Proxyman, Postman, Fork)?" "n" && want="1" || want="0"
+        fi
+    fi
+
+    if [[ "$want" == "1" || "$want" == "y" || "$want" == "yes" ]]; then
+        install_cask_if_missing "xcodes-app" "/Applications/Xcodes.app"
+        install_cask_if_missing "proxyman" "/Applications/Proxyman.app"
+        install_cask_if_missing "postman" "/Applications/Postman.app"
+        install_cask_if_missing "fork" "/Applications/Fork.app"
+    else
+        print_status "Skipping iOS dev bundle"
+    fi
+}
+
+install_optional_tools() {
+    print_step "Installing optional tools"
+    install_ai_tools
+    install_web_tools
+    install_ios_tools
+}
+
 install_brew_bundle() {
     print_step "Installing Brewfile packages"
 
@@ -288,7 +412,7 @@ print_summary() {
 
     print_success "Real-machine bootstrap finished"
     echo "Manual follow-up:"
-    echo "  1. Sign in to apps: 1Password, Slack, Telegram, Obsidian, Raycast"
+    echo "  1. Sign in to apps: 1Password, Slack, Telegram, Raycast"
     echo "  2. Restore SSH keys into ~/.ssh and set permissions"
     echo "  3. Import your GPG key if needed: gpg --import <keyfile>"
     echo "  4. Restart the terminal or run: exec fish"
@@ -314,6 +438,7 @@ main() {
     install_xcode_clt
     install_homebrew
     install_brew_bundle
+    install_optional_tools
     ensure_directories
     setup_fish
     configure_fish_init
