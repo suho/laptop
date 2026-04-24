@@ -18,8 +18,6 @@ brew "mise"
 # =============================================================================
 cask "claude-code"
 cask "claude" unless File.directory?("/Applications/Claude.app")
-cask "codex"
-cask "codex-app" unless File.directory?("/Applications/Codex.app")
 
 # =============================================================================
 # Terminal
@@ -27,14 +25,9 @@ cask "codex-app" unless File.directory?("/Applications/Codex.app")
 cask "warp" unless File.directory?("/Applications/Warp.app")
 
 # =============================================================================
-# Containers
+# Editor
 # =============================================================================
-cask "orbstack" unless File.directory?("/Applications/OrbStack.app")
-
-# =============================================================================
-# Editor & LLM
-# =============================================================================
-cask "lm-studio" unless File.directory?("/Applications/LM Studio.app")
+cask "zed" unless File.directory?("/Applications/Zed.app")
 
 # =============================================================================
 # iOS Development
@@ -42,9 +35,15 @@ cask "lm-studio" unless File.directory?("/Applications/LM Studio.app")
 cask "xcodes-app" unless File.directory?("/Applications/Xcodes.app")
 
 # =============================================================================
-# Media Processing
+# API & Network Tools
 # =============================================================================
-brew "ffmpeg"
+cask "proxyman" unless File.directory?("/Applications/Proxyman.app")
+cask "postman" unless File.directory?("/Applications/Postman.app")
+
+# =============================================================================
+# Git Client
+# =============================================================================
+cask "fork" unless File.directory?("/Applications/Fork.app")
 
 # =============================================================================
 # Security
@@ -56,7 +55,6 @@ brew "pinentry-mac"
 # =============================================================================
 # Productivity Apps
 # =============================================================================
-cask "obsidian" unless File.directory?("/Applications/Obsidian.app")
 cask "meetingbar" unless File.directory?("/Applications/MeetingBar.app")
 cask "itsycal" unless File.directory?("/Applications/Itsycal.app")
 cask "1password" unless File.directory?("/Applications/1Password.app")
