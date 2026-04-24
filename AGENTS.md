@@ -26,7 +26,7 @@ laptop/
 
 - **Fish shell** instead of Zsh
 - **LazyVim on Neovim** as the editor setup
-- **Ghostty** as the terminal
+- **Warp** as the terminal
 - **mise** for runtime version management
 - **Brewfile** is the source of truth for installed packages
 - Scripts should be idempotent and safe to re-run

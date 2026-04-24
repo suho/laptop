@@ -9,7 +9,7 @@ The repo has one job now: install apps, CLI tools, and base preferences onto a f
 | Category | Tools |
 |----------|-------|
 | Shell | Fish, Fisher, Starship |
-| Terminal | Ghostty |
+| Terminal | Warp |
 | Editor | Neovim |
 | Productivity | Raycast, Obsidian, MeetingBar, Itsycal, 1Password, Shottr |
 | CLI | git, git-lfs, gh, LazyGit, btop, mise |

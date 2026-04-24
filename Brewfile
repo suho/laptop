@@ -24,7 +24,7 @@ cask "codex-app" unless File.directory?("/Applications/Codex.app")
 # =============================================================================
 # Terminal
 # =============================================================================
-cask "ghostty@tip" unless File.directory?("/Applications/Ghostty.app")
+cask "warp" unless File.directory?("/Applications/Warp.app")
 
 # =============================================================================
 # Containers

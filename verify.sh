@@ -99,7 +99,7 @@ done
 print_status "Checking installed casks"
 
 for cask_name in \
-    claude-code claude codex codex-app ghostty@tip \
+    claude-code claude codex codex-app warp \
     orbstack lm-studio xcodes-app obsidian \
     meetingbar itsycal 1password raycast shottr slack telegram \
     google-chrome
@@ -150,7 +150,6 @@ print_status "Checking personal configurations"
 
 config_pairs=(
     "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
-    "$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config"
 )
 
 for entry in "${config_pairs[@]}"; do
