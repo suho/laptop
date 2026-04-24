@@ -6,6 +6,7 @@
 #   ./setup.sh --web      Only run the Web tools installer (OrbStack)
 #   ./setup.sh --ios      Only run the iOS dev bundle installer
 #   ./setup.sh --terminal Only run the terminal picker (Warp or Ghostty)
+#   ./setup.sh --lazyvim  Only install LazyVim and its requirements
 #   Flags can be combined, e.g. ./setup.sh --ai --ios
 
 set -euo pipefail
@@ -289,6 +290,7 @@ install_terminal_tools() {
                 ;;
             2|ghostty)
                 install_cask_if_missing "ghostty@tip" "/Applications/Ghostty.app"
+                install_cask_if_missing "font-jetbrains-mono-nerd-font"
                 ;;
             *)
                 print_warning "Unknown terminal choice: $choice"
@@ -297,12 +299,56 @@ install_terminal_tools() {
     done
 }
 
+install_brew_if_missing() {
+    local formula="$1"
+    if brew list --formula "$formula" >/dev/null 2>&1; then
+        print_success "$formula already installed"
+    else
+        print_status "Installing $formula"
+        brew install "$formula"
+    fi
+}
+
+install_lazyvim_tools() {
+    local want="${INSTALL_LAZYVIM:-}"
+
+    if [[ -z "$want" ]]; then
+        if [[ "$NONINTERACTIVE" == "1" ]]; then
+            want="0"
+        else
+            prompt_yes_no "Install LazyVim (Neovim + fd, ripgrep, Nerd Font)?" "n" && want="1" || want="0"
+        fi
+    fi
+
+    if [[ "$want" != "1" && "$want" != "y" && "$want" != "yes" ]]; then
+        print_status "Skipping LazyVim"
+        return 0
+    fi
+
+    print_status "Installing LazyVim requirements"
+    install_brew_if_missing "neovim"
+    install_brew_if_missing "fd"
+    install_brew_if_missing "ripgrep"
+    install_cask_if_missing "font-jetbrains-mono-nerd-font"
+
+    local nvim_config="$HOME/.config/nvim"
+    if [[ -e "$nvim_config" ]]; then
+        print_success "Existing Neovim config detected at $nvim_config; leaving it untouched"
+    else
+        print_status "Cloning LazyVim starter into $nvim_config"
+        git clone https://github.com/LazyVim/starter "$nvim_config"
+        rm -rf "$nvim_config/.git"
+        print_success "LazyVim starter installed; launch with: nvim"
+    fi
+}
+
 install_optional_tools() {
     print_step "Installing optional tools"
     install_terminal_tools
     install_ai_tools
     install_web_tools
     install_ios_tools
+    install_lazyvim_tools
 }
 
 install_brew_bundle() {
@@ -486,6 +532,7 @@ run_partial() {
     local run_web="$2"
     local run_ios="$3"
     local run_terminal="$4"
+    local run_lazyvim="$5"
 
     require_macos
     detect_homebrew_prefix
@@ -496,6 +543,7 @@ run_partial() {
     [[ "$run_ai" == "1" ]] && install_ai_tools
     [[ "$run_web" == "1" ]] && install_web_tools
     [[ "$run_ios" == "1" ]] && install_ios_tools
+    [[ "$run_lazyvim" == "1" ]] && install_lazyvim_tools
 
     echo ""
     print_success "Selective install finished"
@@ -509,15 +557,16 @@ Usage:
   ./setup.sh --ai       Install AI tools (multi-select prompt)
   ./setup.sh --web      Install OrbStack
   ./setup.sh --ios      Install iOS dev bundle
+  ./setup.sh --lazyvim  Install LazyVim (Neovim, fd, ripgrep, Nerd Font)
   ./setup.sh --help     Show this help
 
 Flags can be combined (e.g. --ai --ios).
-Env overrides: INSTALL_TERMINAL, INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, NONINTERACTIVE.
+Env overrides: INSTALL_TERMINAL, INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, INSTALL_LAZYVIM, NONINTERACTIVE.
 EOF
 }
 
 main() {
-    local run_ai=0 run_web=0 run_ios=0 run_terminal=0 partial=0
+    local run_ai=0 run_web=0 run_ios=0 run_terminal=0 run_lazyvim=0 partial=0
 
     for arg in "$@"; do
         case "$arg" in
@@ -525,6 +574,7 @@ main() {
             --ai) run_ai=1; partial=1 ;;
             --web) run_web=1; partial=1 ;;
             --ios) run_ios=1; partial=1 ;;
+            --lazyvim) run_lazyvim=1; partial=1 ;;
             -h|--help) usage; exit 0 ;;
             *)
                 print_error "Unknown argument: $arg"
@@ -535,7 +585,7 @@ main() {
     done
 
     if [[ "$partial" == "1" ]]; then
-        run_partial "$run_ai" "$run_web" "$run_ios" "$run_terminal"
+        run_partial "$run_ai" "$run_web" "$run_ios" "$run_terminal" "$run_lazyvim"
         return 0
     fi
 

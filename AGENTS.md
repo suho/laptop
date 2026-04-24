@@ -18,19 +18,23 @@ This repository no longer supports export or sync workflows.
 laptop/
 ├── setup.sh                    # Main bootstrap entrypoint for a fresh Mac
 ├── verify.sh                   # Verifies installed tools and shell state
-├── Brewfile                    # Homebrew bundle manifest, source of truth for packages
-└── macbook-setup-checklist.md  # Manual follow-up items not automated by setup.sh
+├── Brewfile                    # Homebrew bundle manifest, source of truth for baseline packages
+└── configs/                    # Starship and Ghostty configs copied into ~/.config
 ```
 
 ## Key Design Decisions
 
 - **Fish shell** instead of Zsh
-- **LazyVim on Neovim** as the editor setup
-- **Warp or Ghostty** as the terminal (picked interactively during setup)
+- **Zed** as the default GUI editor; **LazyVim on Neovim** available as an optional extra
+- **Warp and/or Ghostty** as the terminal (picked interactively during setup; multi-select supported)
 - **mise** for runtime version management
-- **Brewfile** is the source of truth for installed packages
+- **Brewfile** is the source of truth for baseline packages
+- Optional bundles (AI, web, iOS, LazyVim) are installed via interactive pickers in `setup.sh`, not via Brewfile
+- `setup.sh` supports selective re-runs through flags: `--terminal`, `--ai`, `--web`, `--ios`, `--lazyvim` (combinable)
+- Env overrides for non-interactive runs: `INSTALL_TERMINAL`, `INSTALL_AI`, `INSTALL_WEB_ORBSTACK`, `INSTALL_IOS`, `INSTALL_LAZYVIM`, `NONINTERACTIVE`, `SUDO_PASSWORD`
 - Scripts should be idempotent and safe to re-run
 - The repository currently targets real hardware only, not Tart or other VM flows
+- The GitHub repo is public at `https://github.com/suho/laptop`; quick-start instructions prefer a `curl`-based tarball fetch over `git clone` so a fresh Mac can bootstrap before git/SSH are configured
 
 ## Shell Script Conventions
 
