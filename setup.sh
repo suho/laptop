@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # setup.sh - Bootstrap a real macOS machine with the tools in this repo
-# Usage: ./setup.sh
+# Usage:
+#   ./setup.sh            Full bootstrap (brew, core bundle, prompts, configs)
+#   ./setup.sh --ai       Only run the AI tools installer
+#   ./setup.sh --web      Only run the Web tools installer (OrbStack)
+#   ./setup.sh --ios      Only run the iOS dev bundle installer
+#   Flags can be combined, e.g. ./setup.sh --ai --ios
 
 set -euo pipefail
 
@@ -418,7 +423,71 @@ print_summary() {
     echo "  4. Restart the terminal or run: exec fish"
 }
 
+require_brew_ready() {
+    if ! command -v brew >/dev/null 2>&1; then
+        refresh_homebrew_env 2>/dev/null || true
+    fi
+
+    if ! command -v brew >/dev/null 2>&1; then
+        print_error "Homebrew is not installed. Run ./setup.sh (no flags) first."
+        exit 1
+    fi
+}
+
+run_partial() {
+    local run_ai="$1"
+    local run_web="$2"
+    local run_ios="$3"
+
+    require_macos
+    detect_homebrew_prefix
+    require_brew_ready
+
+    print_step "Running selective install"
+    [[ "$run_ai" == "1" ]] && install_ai_tools
+    [[ "$run_web" == "1" ]] && install_web_tools
+    [[ "$run_ios" == "1" ]] && install_ios_tools
+
+    echo ""
+    print_success "Selective install finished"
+}
+
+usage() {
+    cat <<EOF
+Usage:
+  ./setup.sh            Full bootstrap
+  ./setup.sh --ai       Install AI tools (multi-select prompt)
+  ./setup.sh --web      Install OrbStack
+  ./setup.sh --ios      Install iOS dev bundle
+  ./setup.sh --help     Show this help
+
+Flags can be combined (e.g. --ai --ios).
+Env overrides: INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, NONINTERACTIVE.
+EOF
+}
+
 main() {
+    local run_ai=0 run_web=0 run_ios=0 partial=0
+
+    for arg in "$@"; do
+        case "$arg" in
+            --ai) run_ai=1; partial=1 ;;
+            --web) run_web=1; partial=1 ;;
+            --ios) run_ios=1; partial=1 ;;
+            -h|--help) usage; exit 0 ;;
+            *)
+                print_error "Unknown argument: $arg"
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    if [[ "$partial" == "1" ]]; then
+        run_partial "$run_ai" "$run_web" "$run_ios"
+        return 0
+    fi
+
     require_macos
     detect_homebrew_prefix
 
