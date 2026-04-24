@@ -99,12 +99,22 @@ done
 print_status "Checking installed casks"
 
 for cask_name in \
-    warp zed \
+    zed \
     meetingbar itsycal 1password raycast shottr slack telegram \
     google-chrome
 do
     assert_cask "$cask_name"
 done
+
+print_status "Checking terminal (Warp or Ghostty)"
+
+if brew list --cask warp >/dev/null 2>&1; then
+    print_success "Cask installed: warp"
+elif brew list --cask ghostty@tip >/dev/null 2>&1; then
+    print_success "Cask installed: ghostty@tip"
+else
+    record_failure "No terminal cask installed (expected warp or ghostty@tip)"
+fi
 
 print_status "Checking Fish shell state"
 
@@ -150,6 +160,10 @@ print_status "Checking personal configurations"
 config_pairs=(
     "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
 )
+
+if brew list --cask ghostty@tip >/dev/null 2>&1; then
+    config_pairs+=("$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config")
+fi
 
 for entry in "${config_pairs[@]}"; do
     src="${entry%%:*}"

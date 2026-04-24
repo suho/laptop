@@ -5,6 +5,7 @@
 #   ./setup.sh --ai       Only run the AI tools installer
 #   ./setup.sh --web      Only run the Web tools installer (OrbStack)
 #   ./setup.sh --ios      Only run the iOS dev bundle installer
+#   ./setup.sh --terminal Only run the terminal picker (Warp or Ghostty)
 #   Flags can be combined, e.g. ./setup.sh --ai --ios
 
 set -euo pipefail
@@ -264,8 +265,41 @@ install_ios_tools() {
     fi
 }
 
+install_terminal_tools() {
+    local selection="${INSTALL_TERMINAL:-}"
+
+    if [[ "$NONINTERACTIVE" != "1" && -z "$selection" ]]; then
+        echo ""
+        echo "Terminal (multi-select, space-separated numbers; empty to skip):"
+        echo "  1) warp"
+        echo "  2) ghostty"
+        read -r -p "Select [e.g. '1', '2', 'all', or blank]: " selection || selection=""
+    fi
+
+    [[ -z "$selection" || "$selection" == "none" ]] && { print_status "Skipping terminal install"; return 0; }
+
+    if [[ "$selection" == "all" ]]; then
+        selection="1 2"
+    fi
+
+    for choice in $selection; do
+        case "$choice" in
+            1|warp)
+                install_cask_if_missing "warp" "/Applications/Warp.app"
+                ;;
+            2|ghostty)
+                install_cask_if_missing "ghostty@tip" "/Applications/Ghostty.app"
+                ;;
+            *)
+                print_warning "Unknown terminal choice: $choice"
+                ;;
+        esac
+    done
+}
+
 install_optional_tools() {
     print_step "Installing optional tools"
+    install_terminal_tools
     install_ai_tools
     install_web_tools
     install_ios_tools
@@ -378,6 +412,11 @@ setup_configs() {
         "$SCRIPT_DIR/configs/starship.toml:$HOME/.config/starship.toml"
     )
 
+    if [[ -d "/Applications/Ghostty.app" ]]; then
+        mkdir -p "$HOME/.config/ghostty"
+        configs+=("$SCRIPT_DIR/configs/ghostty/config:$HOME/.config/ghostty/config")
+    fi
+
     for entry in "${configs[@]}"; do
         local src="${entry%%:*}"
         local dst="${entry#*:}"
@@ -402,14 +441,22 @@ configure_macos_defaults() {
 
     defaults write NSGlobalDomain KeyRepeat -int 2
     defaults write NSGlobalDomain InitialKeyRepeat -int 15
+
     defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+    defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+    defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+
     defaults write com.apple.finder AppleShowAllFiles -bool true
     defaults write com.apple.finder ShowPathbar -bool true
     defaults write com.apple.dock autohide -bool true
     defaults write com.apple.dock autohide-delay -float 0
 
+    killall Finder >/dev/null 2>&1 || true
+    killall Dock >/dev/null 2>&1 || true
+
     print_success "macOS defaults applied"
-    print_warning "Log out or restart apps like Finder and Dock to pick up every change"
+    print_warning "Some changes (e.g. key repeat) only apply after logout"
 }
 
 print_summary() {
@@ -438,12 +485,14 @@ run_partial() {
     local run_ai="$1"
     local run_web="$2"
     local run_ios="$3"
+    local run_terminal="$4"
 
     require_macos
     detect_homebrew_prefix
     require_brew_ready
 
     print_step "Running selective install"
+    [[ "$run_terminal" == "1" ]] && install_terminal_tools
     [[ "$run_ai" == "1" ]] && install_ai_tools
     [[ "$run_web" == "1" ]] && install_web_tools
     [[ "$run_ios" == "1" ]] && install_ios_tools
@@ -456,21 +505,23 @@ usage() {
     cat <<EOF
 Usage:
   ./setup.sh            Full bootstrap
+  ./setup.sh --terminal Install terminal (Warp or Ghostty)
   ./setup.sh --ai       Install AI tools (multi-select prompt)
   ./setup.sh --web      Install OrbStack
   ./setup.sh --ios      Install iOS dev bundle
   ./setup.sh --help     Show this help
 
 Flags can be combined (e.g. --ai --ios).
-Env overrides: INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, NONINTERACTIVE.
+Env overrides: INSTALL_TERMINAL, INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, NONINTERACTIVE.
 EOF
 }
 
 main() {
-    local run_ai=0 run_web=0 run_ios=0 partial=0
+    local run_ai=0 run_web=0 run_ios=0 run_terminal=0 partial=0
 
     for arg in "$@"; do
         case "$arg" in
+            --terminal) run_terminal=1; partial=1 ;;
             --ai) run_ai=1; partial=1 ;;
             --web) run_web=1; partial=1 ;;
             --ios) run_ios=1; partial=1 ;;
@@ -484,7 +535,7 @@ main() {
     done
 
     if [[ "$partial" == "1" ]]; then
-        run_partial "$run_ai" "$run_web" "$run_ios"
+        run_partial "$run_ai" "$run_web" "$run_ios" "$run_terminal"
         return 0
     fi
 
