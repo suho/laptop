@@ -4,6 +4,8 @@
 # Optional tools (AI apps, OrbStack, iOS bundle) are installed interactively
 # by setup.sh, not listed here.
 
+tap "suho/tap"
+
 # =============================================================================
 # Core CLI Tools
 # =============================================================================
@@ -44,7 +46,7 @@ brew "pinentry-mac"
 cask "meetingbar" unless File.directory?("/Applications/MeetingBar.app")
 cask "itsycal" unless File.directory?("/Applications/Itsycal.app")
 cask "1password" unless File.directory?("/Applications/1Password.app")
-cask "raycast" unless File.directory?("/Applications/Raycast.app")
+cask "nova-launcher" unless File.directory?("/Applications/NovaLauncher.app")
 cask "shottr" unless File.directory?("/Applications/Shottr.app")
 
 # =============================================================================

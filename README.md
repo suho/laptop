@@ -11,7 +11,7 @@ The repo has one job now: install apps, CLI tools, and base preferences onto a f
 | Shell | Fish, Fisher, Starship |
 | Terminal | Warp and/or Ghostty (interactive pick) |
 | Editor | Zed (default), LazyVim on Neovim (optional) |
-| Productivity | Raycast, Obsidian, MeetingBar, Itsycal, 1Password, Shottr |
+| Productivity | Nova Launcher, Obsidian, MeetingBar, Itsycal, 1Password, Shottr |
 | CLI | git, git-lfs, gh, LazyGit, btop, mise, ffmpeg |
 | Security | openssl, gnupg, pinentry-mac |
 | AI (optional) | Claude Code, Codex, LM Studio |
@@ -87,7 +87,7 @@ After setup finishes:
 
 ## Manual Steps After Setup
 
-1. Sign in to 1Password, Slack, Telegram, Obsidian, and Raycast
+1. Sign in to 1Password, Slack, Telegram, Obsidian, and Nova Launcher
 2. Restore SSH keys into `~/.ssh/` and fix permissions
 3. Import your GPG key if needed
 4. Bring over personal data and any personal app config that this repo intentionally does not manage

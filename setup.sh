@@ -510,7 +510,7 @@ print_summary() {
 
     print_success "Real-machine bootstrap finished"
     echo "Manual follow-up:"
-    echo "  1. Sign in to apps: 1Password, Slack, Telegram, Raycast"
+    echo "  1. Sign in to apps: 1Password, Slack, Telegram, Nova Launcher"
     echo "  2. Restore SSH keys into ~/.ssh and set permissions"
     echo "  3. Import your GPG key if needed: gpg --import <keyfile>"
     echo "  4. Restart the terminal or run: exec fish"

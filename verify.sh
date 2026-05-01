@@ -100,7 +100,7 @@ print_status "Checking installed casks"
 
 for cask_name in \
     zed \
-    meetingbar itsycal 1password raycast shottr slack telegram \
+    meetingbar itsycal 1password nova-launcher shottr slack telegram \
     google-chrome
 do
     assert_cask "$cask_name"
