@@ -16,6 +16,7 @@ brew "git-lfs"
 brew "gh"
 brew "lazygit"
 brew "btop"
+brew "libyaml"
 brew "mise"
 
 # =============================================================================
