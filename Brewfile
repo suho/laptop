@@ -46,7 +46,7 @@ brew "pinentry-mac"
 cask "meetingbar" unless File.directory?("/Applications/MeetingBar.app")
 cask "itsycal" unless File.directory?("/Applications/Itsycal.app")
 cask "1password" unless File.directory?("/Applications/1Password.app")
-cask "nova-launcher" unless File.directory?("/Applications/NovaLauncher.app")
+cask "suho/tap/nova-launcher" unless File.directory?("/Applications/NovaLauncher.app")
 cask "shottr" unless File.directory?("/Applications/Shottr.app")
 
 # =============================================================================
