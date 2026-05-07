@@ -167,6 +167,21 @@ install_cask_if_missing() {
     brew install --cask "$cask_name"
 }
 
+install_ghostty() {
+    if brew list --cask ghostty >/dev/null 2>&1; then
+        print_success "ghostty already installed"
+        return 0
+    fi
+
+    if brew list --cask ghostty@tip >/dev/null 2>&1; then
+        print_status "Switching Ghostty from ghostty@tip to ghostty"
+        brew uninstall --cask ghostty@tip
+    fi
+
+    print_status "Installing ghostty"
+    brew install --cask --force ghostty
+}
+
 prompt_yes_no() {
     local prompt="$1"
     local default="${2:-n}"
@@ -289,7 +304,7 @@ install_terminal_tools() {
                 install_cask_if_missing "warp" "/Applications/Warp.app"
                 ;;
             2|ghostty)
-                install_cask_if_missing "ghostty@tip" "/Applications/Ghostty.app"
+                install_ghostty
                 install_cask_if_missing "font-jetbrains-mono-nerd-font"
                 ;;
             *)

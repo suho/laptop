@@ -1,3 +1,6 @@
+# Tip version
+auto-update-channel = tip
+
 # Theme to match with nvim
 theme = Atom One Dark
 font-family = "JetBrainsMonoNL Nerd Font Mono"
@@ -6,6 +9,5 @@ font-size = 15
 # Windows
 mouse-hide-while-typing = true
 maximize = true
-window-decoration = none
 split-divider-color = "394260"
 unfocused-split-opacity = 0.8
