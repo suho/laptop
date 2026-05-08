@@ -112,8 +112,6 @@ if brew list --cask warp >/dev/null 2>&1; then
     print_success "Cask installed: warp"
 elif brew list --cask ghostty >/dev/null 2>&1; then
     print_success "Cask installed: ghostty"
-elif brew list --cask ghostty@tip >/dev/null 2>&1; then
-    record_failure "Legacy Ghostty cask installed: ghostty@tip (run ./setup.sh --terminal and select ghostty)"
 else
     record_failure "No terminal cask installed (expected warp or ghostty)"
 fi
