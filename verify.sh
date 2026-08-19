@@ -55,6 +55,15 @@ assert_cask() {
     fi
 }
 
+assert_formula() {
+    local formula_name="$1"
+    if brew list --formula "$formula_name" >/dev/null 2>&1; then
+        print_success "Formula installed: $formula_name"
+    else
+        record_failure "Formula missing: $formula_name"
+    fi
+}
+
 print_status "Checking platform"
 
 if [[ "$(uname)" != "Darwin" ]]; then
@@ -114,6 +123,41 @@ elif brew list --cask ghostty >/dev/null 2>&1; then
     print_success "Cask installed: ghostty"
 else
     record_failure "No terminal cask installed (expected warp or ghostty)"
+fi
+
+if command -v brew >/dev/null 2>&1 && brew list --formula colima >/dev/null 2>&1; then
+    print_status "Checking optional container tools"
+
+    for formula_name in colima docker docker-compose docker-buildx; do
+        assert_formula "$formula_name"
+    done
+
+    assert_command "colima"
+    assert_command "docker"
+
+    if colima status >/dev/null 2>&1; then
+        print_success "Colima is running"
+    else
+        record_failure "Colima is not running (start it with: colima start)"
+    fi
+
+    if docker context inspect colima >/dev/null 2>&1; then
+        print_success "Docker context available: colima"
+    else
+        record_failure "Docker context missing: colima"
+    fi
+
+    if docker compose version >/dev/null 2>&1; then
+        print_success "Docker Compose plugin is available"
+    else
+        record_failure "Docker Compose plugin is unavailable"
+    fi
+
+    if docker buildx version >/dev/null 2>&1; then
+        print_success "Docker Buildx plugin is available"
+    else
+        record_failure "Docker Buildx plugin is unavailable"
+    fi
 fi
 
 print_status "Checking Fish shell state"
