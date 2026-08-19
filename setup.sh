@@ -3,7 +3,7 @@
 # Usage:
 #   ./setup.sh            Full bootstrap (brew, core bundle, prompts, configs)
 #   ./setup.sh --ai       Only run the AI tools installer
-#   ./setup.sh --web      Only run the Web tools installer (OrbStack)
+#   ./setup.sh --web      Only run the container tools installer (Colima + Docker CLI)
 #   ./setup.sh --ios      Only run the iOS dev bundle installer
 #   ./setup.sh --terminal Only run the terminal picker (Warp or Ghostty)
 #   ./setup.sh --lazyvim  Only install LazyVim and its requirements
@@ -227,21 +227,69 @@ install_ai_tools() {
     done
 }
 
+configure_docker_cli_plugin() {
+    local plugin_name="$1"
+    local brew_prefix
+    brew_prefix="$(brew --prefix)"
+    local source_path="$brew_prefix/lib/docker/cli-plugins/docker-$plugin_name"
+    local docker_config_dir="${DOCKER_CONFIG:-$HOME/.docker}"
+    local target_dir="$docker_config_dir/cli-plugins"
+    local target_path="$target_dir/docker-$plugin_name"
+
+    mkdir -p "$target_dir"
+
+    if [[ -L "$target_path" && "$(readlink "$target_path")" == "$source_path" ]]; then
+        print_success "Docker $plugin_name plugin already configured"
+        return 0
+    fi
+
+    if [[ -e "$target_path" || -L "$target_path" ]]; then
+        print_warning "Docker $plugin_name plugin already exists at $target_path; leaving it untouched"
+        return 0
+    fi
+
+    if [[ ! -e "$source_path" ]]; then
+        print_error "Docker $plugin_name plugin not found at $source_path"
+        return 1
+    fi
+
+    ln -s "$source_path" "$target_path"
+    print_success "Docker $plugin_name plugin configured"
+}
+
 install_web_tools() {
-    local want="${INSTALL_WEB_ORBSTACK:-}"
+    local want="${INSTALL_WEB_COLIMA:-}"
 
     if [[ -z "$want" ]]; then
         if [[ "$NONINTERACTIVE" == "1" ]]; then
             want="0"
         else
-            prompt_yes_no "Install OrbStack (containers)?" "n" && want="1" || want="0"
+            prompt_yes_no "Install Colima with Docker CLI, Compose, and Buildx?" "n" && want="1" || want="0"
         fi
     fi
 
     if [[ "$want" == "1" || "$want" == "y" || "$want" == "yes" ]]; then
-        install_cask_if_missing "orbstack" "/Applications/OrbStack.app"
+        install_brew_if_missing "colima"
+        install_brew_if_missing "docker"
+        install_brew_if_missing "docker-compose"
+        install_brew_if_missing "docker-buildx"
+        configure_docker_cli_plugin "compose"
+        configure_docker_cli_plugin "buildx"
+
+        if colima status >/dev/null 2>&1; then
+            print_success "Colima is already running"
+        else
+            print_status "Starting Colima"
+            colima start
+        fi
+
+        docker context use colima >/dev/null
+        docker info >/dev/null
+        docker compose version >/dev/null
+        docker buildx version >/dev/null
+        print_success "Colima and Docker CLI are ready"
     else
-        print_status "Skipping OrbStack"
+        print_status "Skipping Colima and Docker CLI"
     fi
 }
 
@@ -555,13 +603,13 @@ Usage:
   ./setup.sh            Full bootstrap
   ./setup.sh --terminal Install terminal (Warp or Ghostty)
   ./setup.sh --ai       Install AI tools (multi-select prompt)
-  ./setup.sh --web      Install OrbStack
+  ./setup.sh --web      Install Colima and Docker CLI tools
   ./setup.sh --ios      Install iOS dev bundle
   ./setup.sh --lazyvim  Install LazyVim (Neovim, fd, ripgrep, Nerd Font)
   ./setup.sh --help     Show this help
 
 Flags can be combined (e.g. --ai --ios).
-Env overrides: INSTALL_TERMINAL, INSTALL_AI, INSTALL_WEB_ORBSTACK, INSTALL_IOS, INSTALL_LAZYVIM, NONINTERACTIVE.
+Env overrides: INSTALL_TERMINAL, INSTALL_AI, INSTALL_WEB_COLIMA, INSTALL_IOS, INSTALL_LAZYVIM, NONINTERACTIVE.
 EOF
 }
 

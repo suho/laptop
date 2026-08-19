@@ -15,7 +15,7 @@ The repo has one job now: install apps, CLI tools, and base preferences onto a f
 | CLI | git, git-lfs, gh, LazyGit, btop, mise, ffmpeg |
 | Security | openssl, gnupg, pinentry-mac |
 | AI (optional) | Claude Code, Codex, LM Studio |
-| Web (optional) | OrbStack |
+| Containers (optional) | Colima, Docker CLI, Compose, Buildx |
 | iOS (optional) | Xcodes, Proxyman, Postman, Fork |
 | Configs | Starship prompt, Ghostty |
 
@@ -55,7 +55,7 @@ Re-run pieces of the setup without going through the full bootstrap:
 ```sh
 ./setup.sh --terminal   # Warp and/or Ghostty
 ./setup.sh --ai         # Claude Code, Codex, LM Studio
-./setup.sh --web        # OrbStack
+./setup.sh --web        # Colima + Docker CLI, Compose, and Buildx
 ./setup.sh --ios        # Xcodes, Proxyman, Postman, Fork
 ./setup.sh --lazyvim    # Neovim + fd + ripgrep + Nerd Font + LazyVim starter
 ./setup.sh --help
@@ -63,7 +63,9 @@ Re-run pieces of the setup without going through the full bootstrap:
 
 Flags can be combined (e.g. `./setup.sh --ai --ios`).
 
-Env overrides for non-interactive runs: `INSTALL_TERMINAL`, `INSTALL_AI`, `INSTALL_WEB_ORBSTACK`, `INSTALL_IOS`, `INSTALL_LAZYVIM`, `NONINTERACTIVE`, `SUDO_PASSWORD`.
+Env overrides for non-interactive runs: `INSTALL_TERMINAL`, `INSTALL_AI`, `INSTALL_WEB_COLIMA`, `INSTALL_IOS`, `INSTALL_LAZYVIM`, `NONINTERACTIVE`, `SUDO_PASSWORD`.
+
+The container installer starts Colima so the Docker CLI is ready immediately. After a restart, run `colima start` before using `docker` again.
 
 ## Repository Layout
 

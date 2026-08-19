@@ -31,7 +31,7 @@ laptop/
 - **Brewfile** is the source of truth for baseline packages
 - Optional bundles (AI, web, iOS, LazyVim) are installed via interactive pickers in `setup.sh`, not via Brewfile
 - `setup.sh` supports selective re-runs through flags: `--terminal`, `--ai`, `--web`, `--ios`, `--lazyvim` (combinable)
-- Env overrides for non-interactive runs: `INSTALL_TERMINAL`, `INSTALL_AI`, `INSTALL_WEB_ORBSTACK`, `INSTALL_IOS`, `INSTALL_LAZYVIM`, `NONINTERACTIVE`, `SUDO_PASSWORD`
+- Env overrides for non-interactive runs: `INSTALL_TERMINAL`, `INSTALL_AI`, `INSTALL_WEB_COLIMA`, `INSTALL_IOS`, `INSTALL_LAZYVIM`, `NONINTERACTIVE`, `SUDO_PASSWORD`
 - Scripts should be idempotent and safe to re-run
 - The repository currently targets real hardware only, not Tart or other VM flows
 - The GitHub repo is public at `https://github.com/suho/laptop`; quick-start instructions prefer a `curl`-based tarball fetch over `git clone` so a fresh Mac can bootstrap before git/SSH are configured

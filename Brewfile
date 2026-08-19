@@ -1,7 +1,7 @@
 # Brewfile - Homebrew bundle manifest
 # Source of truth for packages installed by setup.sh
 #
-# Optional tools (AI apps, OrbStack, iOS bundle) are installed interactively
+# Optional tools (AI apps, Colima and Docker CLI, iOS bundle) are installed interactively
 # by setup.sh, not listed here.
 
 tap "suho/tap"
